@@ -1,0 +1,8 @@
+#!/bin/bash
+
+composer --version >/dev/null 2>&1 || {
+  tmp=$(mktemp)
+  curl -sSL https://getcomposer.org/installer -o ${tmp}
+  php ${tmp} --filename=composer
+  composer global require hirak/prestissimo
+}

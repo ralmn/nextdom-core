@@ -1,0 +1,9 @@
+#!/bin/bash
+
+version="2.4.0"
+minify --version >/dev/null 2>&1 || {
+  curl -sSL https://github.com/tdewolff/minify/releases/download/v${version}/minify_${version}_linux_amd64.tar.gz -o /tmp/minify_${version}_linux_amd64.tar.gz
+  tar xzf  /tmp/minify_${version}_linux_amd64.tar.gz -C /tmp
+  mv /tmp/minify /usr/local/bin/
+  chmod +x /usr/local/bin/
+}

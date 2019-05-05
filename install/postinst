@@ -133,12 +133,10 @@ step_nextdom_file_permissions() {
   # ${WEBSERVER_HOME}/plugins and ${WEBSERVER_HOME}/public/img should not be given
   # www-data ownership, still needed until proper migration handling
   local directories=("${LIB_DIRECTORY}" "${LOG_DIRECTORY}" "${TMP_DIRECTORY}" "${WEBSERVER_HOME}/plugins" "${WEBSERVER_HOME}/public/img")
-  for c_dir in ${directories[*]}; do
-    chown -R www-data:www-data ${c_dir}
-    find ${c_dir} -type d -exec chmod 0755 {} \;
-    find ${c_dir} -type f -exec chmod 0644 {} \;
-    print_verbose "set file owner: www-data, perms: 0755/0644 on directory ${c_dir}"
-  done
+  chown -R www-data:www-data ${c_dir} ${directories[@]}
+  find ${directories[@]} -type d -exec chmod 0755 {} \;
+  find ${directories[@]} -type f -exec chmod 0644 {} \;
+  print_verbose "set file owner: www-data, perms: 0755/0644 on directory ${directories[@]}"
 }
 
 
@@ -169,11 +167,10 @@ step_nextdom_mysql_parameters() {
       HOSTPASS="${HOSTPASS} --port=${MYSQL_PORT}"
   fi
 
-  MYSQL_NEXTDOM_PASSWD=${MYSQL_NEXTDOM_PASSWD:-$(cat /dev/urandom | tr -cd 'a-f0-9' | head -c 15)}
+  MYSQL_NEXTDOM_PASSWD=${MYSQL_NEXTDOM_PASSWD:-$(openssl rand -hex 16)}
   MYSQL_HOSTNAME=${MYSQL_HOSTNAME:-localhost}
   MYSQL_PORT=${MYSQL_PORT:-3306}
   MYSQL_NEXTDOM_DB=${MYSQL_NEXTDOM_DB:nextdom}
-
 
   print_verbose "install directory: ${WEBSERVER_HOME}"
   print_verbose "database host: ${MYSQL_HOSTNAME}"
@@ -398,8 +395,16 @@ EOS
 
 
 step_nextdom_mysql_configuration() {
+  dstConfig="/etc/mysql/conf.d/nextdom_my.cnf"
+  srcConfig="${root}/install/mysql/nextdom_my.cnf"
+
   # check that mysql is locally installed before any further configuration
   mysqladmin -uroot ${HOSTPASS} status >/dev/null 2>/dev/null || {
+    return 0
+  }
+
+  # we want to avoid unnecessary mysql restart
+  diff ${srcConfig} ${dstConfig} >/dev/null 2>&1 && {
     return 0
   }
 
@@ -409,26 +414,9 @@ step_nextdom_mysql_configuration() {
     }
   }
 
+  print_verbose "created nextdom mysql configuration: ${dstConfig}"
   rm -f /var/lib/mysql/ib_logfile*
-
-  if [ -d /etc/mysql/conf.d ]; then
-      cat - > /etc/mysql/conf.d/nextdom_my.cnf <<EOS
-[mysqld]
-skip-name-resolve
-key_buffer_size = 16M
-thread_cache_size = 16
-tmp_table_size = 48M
-max_heap_table_size = 48M
-query_cache_type =1
-query_cache_size = 32M
-query_cache_limit = 2M
-query_cache_min_res_unit=3K
-innodb_flush_method = O_DIRECT
-innodb_flush_log_at_trx_commit = 2
-innodb_log_file_size = 32M
-EOS
-  fi
-  print_verbose "created nextdom mysql configuration: /etc/mysql/conf.d/nextdom_my.cnf"
+  cp ${srcConfig} ${dstConfig}
 
   service mysql start >> ${DEBUG} 2>&1 || {
     service mysql start >> ${DEBUG} 2>&1 || {
@@ -533,27 +521,15 @@ step_nextdom_mysql_populate() {
       CONSTRAINT='localhost';
   fi
 
-  QUERY="DROP USER IF EXISTS '${MYSQL_NEXTDOM_USER}'@'${CONSTRAINT}';"
-  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} -e "${QUERY}" >> ${DEBUG} 2>&1
-  print_verbose "deleted mysql user: ${MYSQL_NEXTDOM_USER}"
-
-  QUERY="CREATE USER '${MYSQL_NEXTDOM_USER}'@'${CONSTRAINT}' IDENTIFIED BY '${MYSQL_NEXTDOM_PASSWD}';"
-  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} -e "${QUERY}" >> ${DEBUG} 2>&1
-  print_verbose "created mysql user: ${MYSQL_NEXTDOM_USER}"
-
-  QUERY="DROP DATABASE IF EXISTS ${MYSQL_NEXTDOM_DB};"
-  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} -e "${QUERY}" >> ${DEBUG} 2>&1
-  print_verbose "deleted mysql table: ${MYSQL_NEXTDOM_DB}"
-
-  QUERY="CREATE DATABASE ${MYSQL_NEXTDOM_DB};"
-  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} -e "${QUERY}" >> ${DEBUG} 2>&1
-  print_verbose "created mysql table: ${MYSQL_NEXTDOM_DB}"
-
-  QUERY="GRANT ALL PRIVILEGES ON ${MYSQL_NEXTDOM_DB}.* TO '${MYSQL_NEXTDOM_USER}'@'${CONSTRAINT}';"
-  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} -e "${QUERY}" >> ${DEBUG} 2>&1
-  QUERY="FLUSH PRIVILEGES;"
-  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} -e "${QUERY}" >> ${DEBUG} 2>&1
-  print_verbose "configured table privileges: ${MYSQL_NEXTDOM_DB}"
+  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} >> ${DEBUG} 2>&1 <<EOS
+DROP USER IF EXISTS '${MYSQL_NEXTDOM_USER}'@'${CONSTRAINT}';
+CREATE USER '${MYSQL_NEXTDOM_USER}'@'${CONSTRAINT}' IDENTIFIED BY '${MYSQL_NEXTDOM_PASSWD}';
+DROP DATABASE IF EXISTS ${MYSQL_NEXTDOM_DB};
+CREATE DATABASE ${MYSQL_NEXTDOM_DB};
+GRANT ALL PRIVILEGES ON ${MYSQL_NEXTDOM_DB}.* TO '${MYSQL_NEXTDOM_USER}'@'${CONSTRAINT}';
+FLUSH PRIVILEGES;
+EOS
+  mysql -uroot -h${MYSQL_HOSTNAME} ${HOSTPASS} ${MYSQL_NEXTDOM_DB} >> ${DEBUG} 2>&1 < ${root}/install/install.sql
 
   php ${WEBSERVER_HOME}/install/install.php mode=force >> ${DEBUG} 2>&1 || {
     print_error "nexdom installation script failed"
@@ -696,4 +672,6 @@ EOS
   fi
 }
 
+date -R
 main $@
+date -R

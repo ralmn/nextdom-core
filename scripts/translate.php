@@ -1,8 +1,8 @@
 <?php
 
 if (count($argv) == 1) {
-    echo "Utilisation : ".$argv[0]." FILE_TO_TRANSLATE\n";
-    die();
+    printf("usage: %s file1 [file2] [file...]\n", $argv[0]);
+    exit(1);
 }
 
 require (__DIR__.'/../vendor/autoload.php');
@@ -10,12 +10,11 @@ require (__DIR__.'/../vendor/autoload.php');
 use Symfony\Component\Translation\Translator;
 use Symfony\Component\Translation\Loader\YamlFileLoader;
 
-$translator = new Translator('fr_FR', null, __DIR__.'/../var/i18n');
-$translator->addLoader('yaml', new YamlFileLoader());
-$translator->addResource('yaml', '../translations/fr_FR.yml', 'fr_FR');
+function translateFile($target, $translator) {
+    if (false === file_exists($target)) {
+        return;
+    }
 
-$target = $argv[1];
-if (file_exists($target)) {
     $content = file_get_contents($target);
     preg_match_all("/{{(.*?)}}/s", $content, $matches);
     $translationArray = [];
@@ -26,5 +25,16 @@ if (file_exists($target)) {
         }
         $translationArray['{{'.$toTranslate.'}}'] = $translation;
     }
-    file_put_contents($target, str_replace(array_keys($translationArray), $translationArray, $content));
+    $result = str_replace(array_keys($translationArray), $translationArray, $content);
+    file_put_contents($target, $result);
+}
+
+
+$translator = new Translator('fr_FR', null, __DIR__.'/../var/i18n');
+$translator->addLoader('yaml', new YamlFileLoader());
+$translator->addResource('yaml', '../translations/fr_FR.yml', 'fr_FR');
+
+array_shift($argv);
+foreach ($argv as $target) {
+    translateFile($target, $translator);
 }

@@ -1,0 +1,13 @@
+[Unit]
+Description=Nextdom post install
+After=apache2.service
+After=mysqld.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/share/nextdom/install/postinst
+Environment=HOME=/root
+
+[Install]
+WantedBy=multi-user.target

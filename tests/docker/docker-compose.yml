@@ -1,0 +1,49 @@
+version: "3.3"
+services:
+  nextdom-dev:
+    image: nextdom/nextdom-core:dev
+    container_name: nextdom-dev
+    privileged: true
+    security_opt:
+      - apparmor=unconfined
+    networks:
+      - default
+    ports:
+      - 8764:80
+      - 8763:443
+    volumes:
+      - type: bind
+        source: ../../
+        target: /usr/share/nextdom
+    build:
+      context: ../../
+      dockerfile: tests/docker/nextdom-dev/Dockerfile
+      labels:
+        - org.label-schema.schema-version="1.0"
+        - org.label-schema.build-date="$BUILD_DATE"
+        - org.label-schema.name="nextdom/nextdom-core:dev"
+        - org.label-schema.description="Used by nextdom core developpers"
+        - org.label-schema.url="https://www.nextdom.org/"
+        - org.label-schema.vcs-url="https://github.com/NextDom/nextdom-core/"
+        - org.label-schema.vcs-ref="$VCS_REF"
+        - org.label-schema.vendor="nextdom"
+        - org.label-schema.version="$BUILD_VERSION"
+      args:
+        with_samba: 1
+  nextdom-test:
+    image: nextdom/nextdom-core:test
+    build:
+      context: ./nextdom-test
+      dockerfile: Dockerfile
+      labels:
+        - org.label-schema.schema-version="1.0"
+        - org.label-schema.build-date="$BUILD_DATE"
+        - org.label-schema.name="nextdom/nextdom-core:test"
+        - org.label-schema.description="Use to run nextdom core functionnal test suite"
+        - org.label-schema.url="https://www.nextdom.org/"
+        - org.label-schema.vcs-url="https://github.com/NextDom/nextdom-core/"
+        - org.label-schema.vcs-ref="$VCS_REF"
+        - org.label-schema.vendor="nextdom"
+        - org.label-schema.version="$BUILD_VERSION"
+networks:
+  default:

@@ -51,10 +51,7 @@ try {
         throw new Exception('NextDom nécessite PHP 5.6 ou plus (actuellement : ' . PHP_VERSION . ')');
     }
     echo "\nInstallation de NextDom " . nextdom::version() . "\n";
-    $sql = file_get_contents(__DIR__ . '/install.sql');
-    echo "Installation de la base de données...";
-    DB::Prepare($sql, array(), DB::FETCH_TYPE_ROW);
-    echo "OK\n";
+
     echo "Post installation...\n";
     config::save('api', config::genKey());
     require_once __DIR__ . '/consistency.php';

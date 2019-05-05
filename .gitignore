@@ -40,3 +40,5 @@ core/css
 /var
 /data.*
 /data
+tests/chromedriver
+tests/chromedriver.zip

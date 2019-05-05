@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ${ENABLE_SMB:-0} -eq 0 ]; then
+if [ ${with_samba:-0} -eq 0 ]; then
     exit 0
 fi
 

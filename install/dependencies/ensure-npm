@@ -1,0 +1,9 @@
+#!/bin/bash
+
+npm --version > /dev/null 2>&1 || {
+    tmpFile=$(mktemp)
+		wget -q https://deb.nodesource.com/setup_10.x -O ${tmpFile}
+    bash ${tmpFile}
+		apt install -y nodejs
+    rm -f ${tmpFile}
+}

@@ -32,13 +32,6 @@ function run_as_superuser {
   fi
 }
 
-function install_nodemodules {
-  echo " >>> Installing the npm modules"
-  [[ ! -d ./vendor ]] && mkdir vendor
-  cp package.json ./vendor/
-  npm install --prefix ./vendor
-}
-
 function install_dep_composer {
   echo " >>> Installation dependencies composer"
   if [[ "$1" = "--no-dev" ]] ; then
@@ -48,33 +41,23 @@ function install_dep_composer {
   fi
 }
 
-function init_dependencies {
-	npm --version > /dev/null 2>&1 || {
-		echo " >>> Installation de node et npm"
-    tmpFile=$(mktemp)
-		wget -q https://deb.nodesource.com/setup_10.x -O ${tmpFile}
-    run_as_superuser bash ${tmpFile}
-		run_as_superuser apt install -y nodejs
-    rm -f ${tmpFile}
-  }
-
-	sass --version > /dev/null 2>&1 || {
-		echo " >>> Installation de sass"
-    run_as_superuser npm install -g sass
-	}
-
-	python -c "import jsmin" 2>&1 /dev/null || {
-	  . /etc/os-release
-	  if [[ "$NAME" == *Debian* ]]; then
-	      run_as_superuser apt install -y python-jsmin;
-	  else
-	    run_as_superuser pip install jsmin;
-	  fi
-  }
+function install_nodemodules {
+  echo " >>> Installing the npm modules"
+  [[ ! -d ./vendor ]] && mkdir vendor
+  cp package.json ./vendor/
+  yarn install --prefer-offline --modules-folder ./vendor/node_modules
 }
 
-cd ${root}/..
+function init_dependencies {
+  run_as_superuser ${root}/../install/dependencies/ensure-npm
+  run_as_superuser ${root}/../install/dependencies/ensure-yarn
+  run_as_superuser ${root}/../install/dependencies/ensure-composer
+  run_as_superuser ${root}/../install/dependencies/ensure-sass
+  run_as_superuser ${root}/../install/dependencies/ensure-minify
+}
 
+
+cd ${root}/..
 init_dependencies
 install_dep_composer --no-dev
 install_nodemodules
