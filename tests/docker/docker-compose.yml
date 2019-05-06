@@ -33,8 +33,8 @@ services:
   nextdom-test:
     image: nextdom/nextdom-core:test
     build:
-      context: ./nextdom-test
-      dockerfile: Dockerfile
+      context: ../../
+      dockerfile: tests/docker/nextdom-test/Dockerfile
       labels:
         - org.label-schema.schema-version="1.0"
         - org.label-schema.build-date="$BUILD_DATE"

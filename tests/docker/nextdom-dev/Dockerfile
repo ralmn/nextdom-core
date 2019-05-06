@@ -24,7 +24,7 @@ RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
     rm -fr /var/lib/{apt,dpkg,cache,log}/
 
 # install nextdom debian dependencies
-COPY ./tests/docker/conf/apt/nextdom-apt.list /etc/apt/sources.list.d/
+COPY tests/docker/conf/apt/nextdom-apt.list /etc/apt/sources.list.d/
 ADD  http://debian.nextdom.org/debian/nextdom.gpg.key nextdom.gpg.key
 RUN apt-key add nextdom.gpg.key && \
     apt-get update -y && \
@@ -34,11 +34,11 @@ RUN apt-key add nextdom.gpg.key && \
     rm -fr /var/lib/{apt,dpkg,cache,log}/
 
 # pre-install dev dependencies (would habe been installed by postint)
-COPY ./install/dependencies/ensure-npm      /tmp/
-COPY ./install/dependencies/ensure-yarn     /tmp/
-COPY ./install/dependencies/ensure-composer /tmp/
-COPY ./install/dependencies/ensure-sass     /tmp/
-COPY ./install/dependencies/ensure-minify   /tmp/
+COPY install/dependencies/ensure-npm      /tmp/
+COPY install/dependencies/ensure-yarn     /tmp/
+COPY install/dependencies/ensure-composer /tmp/
+COPY install/dependencies/ensure-sass     /tmp/
+COPY install/dependencies/ensure-minify   /tmp/
 RUN /tmp/ensure-npm      && \
     /tmp/ensure-yarn     && \
     /tmp/ensure-composer && \
@@ -46,15 +46,19 @@ RUN /tmp/ensure-npm      && \
     /tmp/ensure-minify   && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -fr /var/lib/{apt,dpkg,cache,log}/
+    rm -fr /var/lib/{apt,dpkg,cache,log}/ && \
+    rm -f /tmp/ensure-{npm,yarn,composer,sass,minify} && \
+    npm cache rm --force && \
+    composer clearcache
 
 # optional built-in configured samba server (useful for tests)
 ARG  with_samba
-COPY ./tests/docker/nextdom-dev/with_samba.sh /tmp/
+COPY tests/docker/nextdom-dev/with_samba.sh /tmp/
 RUN  bash /tmp/with_samba.sh && \
      apt-get clean autoclean && \
      apt-get autoremove -y && \
-     rm -fr /var/lib/{apt,dpkg,cache,log}/
+     rm -fr /var/lib/{apt,dpkg,cache,log}/ && \
+     rm -f /tmp/with_samba.sh
 
 #fix apparmor bug when dockerd host is ubuntu:bionic-beaver
 # for the record, the following fixed problem a time, then failed again:
@@ -62,7 +66,7 @@ RUN  bash /tmp/with_samba.sh && \
 RUN mv /usr/sbin/mysqld /usr/bin/mysqld && \
     ln -nfs /usr/bin/mysqld /usr/sbin/mysqld
 
-COPY ./tests/docker/conf/systemd/nextdom-install.service /etc/systemd/
+COPY tests/docker/conf/systemd/nextdom-install.service /etc/systemd/
 RUN  systemctl enable /etc/systemd/nextdom-install.service
 
 EXPOSE 80
