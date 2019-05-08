@@ -42,3 +42,4 @@ core/css
 /data
 tests/chromedriver
 tests/chromedriver.zip
+yarn-error.log
