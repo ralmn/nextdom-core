@@ -4,9 +4,9 @@
 
 import unittest
 import sys
-import os
 from time import sleep
 from libs.base_gui_test import BaseGuiTest
+from libs.tests_funcs import *
 
 class FirstUsePage(BaseGuiTest):
     """Test first use process pages
@@ -23,12 +23,9 @@ class FirstUsePage(BaseGuiTest):
     def setUp(self):
         """Reset process
         """
-        # Reset firstUse status
-        os.system('./scripts/sed_in_docker.sh "nextdom::firstUse = 0" "nextdom::firstUse = 1" /var/lib/nextdom/config/default.config.ini nextdom-test-firstuse') #pylint: disable=line-too-long
-        # Reset user password
-        os.system('docker exec -i nextdom-test-firstuse /usr/bin/mysql -u root nextdomdev -e "UPDATE user SET password = SHA2(\'' + self.INITIAL_PASSWORD + '\', 512)"') #pylint: disable=line-too-long
-        # Reset firstUse status in database
-        os.system('docker exec -i nextdom-test-firstuse /usr/bin/mysql -u root nextdomdev -e "UPDATE config SET \\`value\\` = 1 WHERE \\`key\\` = \'nextdom::firstUse\'"') #pylint: disable=line-too-long
+        container = TestContainer('firstuse')
+        container.force_config_value("nextdom::firstUse", "0", "1")
+        container.set_password(self.INITIAL_PASSWORD)
 
     def test_first_use_shortcuts(self): #pylint: disable=too-many-statements
         """Test shortcuts

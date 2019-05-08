@@ -23,6 +23,8 @@ service cron start
 service mysql start
 service apache2 start
 
+bash -x /usr/share/nextdom/scripts/gen_composer_npm.sh
+bash -x /usr/share/nextdom/scripts/gen_assets.sh
 bash -x /usr/share/nextdom/install/postinst
 
 mysql -u root -e "UPDATE nextdomdev.user SET password = SHA2('nextdom_test', 512)"

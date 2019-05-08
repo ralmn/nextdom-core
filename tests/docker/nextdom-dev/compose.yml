@@ -1,4 +1,4 @@
-version: "3.3"
+version: "3.5"
 services:
   nextdom-dev:
     image: nextdom/nextdom-core:dev
@@ -13,10 +13,10 @@ services:
       - 8763:443
     volumes:
       - type: bind
-        source: ../../
+        source: ../../../
         target: /usr/share/nextdom
     build:
-      context: ../../
+      context: ../../../
       dockerfile: tests/docker/nextdom-dev/Dockerfile
       labels:
         - org.label-schema.schema-version="1.0"
@@ -30,20 +30,6 @@ services:
         - org.label-schema.version="$BUILD_VERSION"
       args:
         with_samba: 1
-  nextdom-test:
-    image: nextdom/nextdom-core:test
-    build:
-      context: ../../
-      dockerfile: tests/docker/nextdom-test/Dockerfile
-      labels:
-        - org.label-schema.schema-version="1.0"
-        - org.label-schema.build-date="$BUILD_DATE"
-        - org.label-schema.name="nextdom/nextdom-core:test"
-        - org.label-schema.description="Use to run nextdom core functionnal test suite"
-        - org.label-schema.url="https://www.nextdom.org/"
-        - org.label-schema.vcs-url="https://github.com/NextDom/nextdom-core/"
-        - org.label-schema.vcs-ref="$VCS_REF"
-        - org.label-schema.vendor="nextdom"
-        - org.label-schema.version="$BUILD_VERSION"
 networks:
   default:
+    name: nextdom-dev

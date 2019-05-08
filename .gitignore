@@ -43,3 +43,4 @@ core/css
 tests/chromedriver
 tests/chromedriver.zip
 yarn-error.log
+tests/coverage/

@@ -9,6 +9,24 @@ set_root() {
 set_root $0
 cd ${root}/tests/docker
 
+args=""
+case $1 in
+  "dev")
+    args="-f ${root}/tests/docker/nextdom-dev/compose.yml"
+    ;;
+  "test")
+    args="-f ${root}/tests/docker/nextdom-test/compose.yml"
+    ;;
+  "prod")
+    args="-f ${root}/tests/docker/nextdom-prod/compose.yml"
+    ;;
+  *)
+    echo "usage: compose { dev | test | prod } [ docker-compose-options ]"
+    exit 1
+esac
+shift
+
+
 BUILD_VERSION=$(git describe --exact-match --tags $(git log -n1 --pretty='%h') 2>/dev/null || echo local-dev)
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 VCS_REF=$(git rev-parse HEAD)
@@ -17,4 +35,4 @@ export BUILD_VERSION
 export BUILD_DATE
 export VCS_REF
 
-docker-compose $@
+docker-compose ${args} $@

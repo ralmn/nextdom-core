@@ -8,32 +8,22 @@ from tests.libs.tests_funcs import *
 def scenarios_tests():
     """Starts tests related to the scenarios
     """
-    container_name = 'scenarios'
     print_subtitle('Scenarios')
-    start_test_container(container_name)
-    exec_command_in_container(
-        container_name,
-        '/usr/bin/mysql -u root nextdomdev < data/smallest_scenario.sql')
+    container = start_test_container('scenarios')
+    container.exec_query_file("/usr/share/nextdom/tests/data/smallest_scenario.sql")
     run_test('tests/scenarios.py')
-    remove_test_container(container_name)
+    container.remove()
 
 def plugins_tests():
     """Starts tests related to the plugins
     """
-    container_name = 'plugins'
     print_subtitle('Plugins')
-    start_test_container(container_name)
-    exec_command_in_container(
-        container_name,
-        '/bin/cp -fr /var/www/html/tests/data/plugin4tests /var/www/html/plugins')
-    exec_command_in_container(
-        container_name,
-        '/bin/chown www-data:www-data -R /var/www/html/plugins')
-    exec_command_in_container(
-        container_name,
-        '/usr/bin/mysql -u root nextdomdev < data/plugin_test.sql')
+    container = start_test_container('plugins')
+    container.run('/bin/cp -fr /usr/share/nextdom/tests/data/plugin4tests /usr/share/nextdom/plugins') #pylint: disable=line-too-long
+    container.run('/bin/chown www-data:www-data -R /usr/share/nextdom//plugins')
+    container.exec_query_file("/usr/share/nextdom/tests/data/plugin_test.sql")
     run_test('tests/plugins.py')
-    remove_test_container(container_name)
+    container.remove()
 
 if __name__ == "__main__":
     TESTS_LIST = {

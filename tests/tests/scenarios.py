@@ -8,7 +8,6 @@ from time import sleep
 class ScenariosTest(unittest.TestCase):
     """Test scenarios features
     """
-
     def test_scenario_cron_execution(self):
         """Test cron execution of a scenario
         """

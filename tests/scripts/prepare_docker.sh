@@ -7,23 +7,21 @@ else
     rootDir=$(dirname $(dirname $(dirname $(readlink -n -f $0))))
 fi
 
-baseImage="sylvaner1664/nextdom-test:latest"
-if [ ! -z "$1" ]; then
-    baseImage=$1;
-fi
+echo "step 1. removing  existing nextdom-test containers..."
+${rootDir}/tests/docker/compose test kill  > /dev/null 2>&1 || true
+${rootDir}/tests/docker/compose test down  > /dev/null 2>&1 || true
 
-docker kill nextdom-test > /dev/null 2>&1 || true
-docker rm nextdom-test > /dev/null 2>&1   || true
 
-# Go to base path
-echo "step 1. creating installer container nextdom-test from ${baseImage}..."
-docker run -d -p 8765:80 -v ${rootDir}:/data --name="nextdom-test" ${baseImage} > /dev/null || {
-  echo "-> enable to run installer container"
+echo "step 2. creating installer container nextdom-test..."
+${rootDir}/tests/docker/compose test up -d >/dev/null 2>&1 || {
+  echo "-> unable to create nextdom-test container"
+  echo "-> command: ${rootDir}/tests/docker/compose test up -d"
   exit 1
 }
-END_OF_INSTALL_STR="OK NEXTDOM TEST READY"
 
-echo -n "step 2. watting for installation to complete..."
+
+echo -n "step 3. watting for installation to complete..."
+END_OF_INSTALL_STR="OK NEXTDOM TEST READY"
 while true; do
 	DOCKER_LOGS=$(docker logs --tail 10 nextdom-test 2>&1)
 	if [[ "$DOCKER_LOGS" =~ .*NEXTDOM.TEST.READY.* ]]; then
@@ -34,17 +32,20 @@ while true; do
 done
 echo " "
 
-echo "step 3. snapshotting container to nextdom-test-snap..."
-docker exec nextdom-test /bin/rm -fr /var/www/html/plugins/*
+
+echo "step 4. snapshotting container to nextdom-test-snap..."
+docker exec   nextdom-test /bin/rm -fr /var/www/html/plugins/*
 docker commit nextdom-test nextdom-test-snap >/dev/null
 
-echo "step 4. destroying installer container..."
-docker kill nextdom-test >/dev/null || {
+
+echo "step 5. deleting nextdom-test installer container..."
+${rootDir}/tests/docker/compose test kill  > /dev/null 2>&1 || {
   echo "-> unable to kill container nextdom-test"
+  echo "-> command: ${rootDir}/tests/docker/compose test kill"
   exit 1
 }
-
-docker rm   nextdom-test >/dev/null || {
+${rootDir}/tests/docker/compose test down  > /dev/null 2>&1  || {
   echo "-> unable to remove container nextdom-test "
+  echo "-> command: ${rootDir}/tests/docker/compose test down"
   exit 1
 }
