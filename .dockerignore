@@ -6,6 +6,8 @@
 .sass-cache
 .travis.yml
 composer.lock
+core/config
+core/css
 data
 phpunit.xml.dist
 plugins
@@ -20,4 +22,3 @@ docker
 !docker/build/dev/*.service
 !docker/build/prod/*.service
 !docker/build/prod/nextdom
-
