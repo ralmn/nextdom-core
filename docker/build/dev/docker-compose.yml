@@ -1,20 +1,30 @@
 version: "3.5"
 services:
-  nextdom-dev:
+  core:
     image: nextdom/nextdom-core:dev
     container_name: nextdom-dev
-    privileged: true
-    security_opt:
-      - apparmor=unconfined
     networks:
       - default
     ports:
       - 8764:80
       - 8763:443
+    tmpfs:
+      - /run
+      - /tmp
+      - /tmp/nextdom
+      - /run/lock
+    cap_add:
+      - SYS_BOOT
     volumes:
+      - type: bind
+        source: /sys/fs/cgroup
+        target: /sys/fs/cgroup
+        read_only: true
       - type: bind
         source: ../../../
         target: /usr/share/nextdom
+    environment:
+      container: docker
     build:
       context: ../../../
       dockerfile: docker/build/dev/Dockerfile
