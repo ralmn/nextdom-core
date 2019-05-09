@@ -4,5 +4,5 @@ vendor
 var
 data
 tests
-!tests/docker/conf/**
 public
+docker/*/Dockerfile

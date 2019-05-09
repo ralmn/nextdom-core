@@ -1,0 +1,17 @@
+version: "3.5"
+services:
+  core:
+    image: nextdom/nextdom-core:prod
+    build:
+      context: ../../
+      dockerfile: docker/nextdom/Dockerfile
+      labels:
+        - org.label-schema.schema-version="1.0"
+        - org.label-schema.build-date="$BUILD_DATE"
+        - org.label-schema.name="nextdom/nextdom-core:prod"
+        - org.label-schema.description="Nextdom application image"
+        - org.label-schema.url="https://www.nextdom.org/"
+        - org.label-schema.vcs-url="https://github.com/NextDom/nextdom-core/"
+        - org.label-schema.vcs-ref="$VCS_REF"
+        - org.label-schema.vendor="nextdom"
+        - org.label-schema.version="$BUILD_VERSION"

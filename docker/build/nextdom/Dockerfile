@@ -66,15 +66,15 @@ WORKDIR /usr/share/nextdom
 COPY --from=builder /usr/share/nextdom ./
 
 # register nextdom service, that runs postint on first run
-COPY tests/docker/conf/systemd/nextdom.service  /usr/share/nextdom/systemd/
-COPY tests/docker/conf/systemd/nextdom          /usr/share/nextdom/systemd/
+COPY docker/conf/systemd/nextdom.service  /usr/share/nextdom/systemd/
+COPY docker/conf/systemd/nextdom          /usr/share/nextdom/systemd/
 RUN systemctl enable /usr/share/nextdom/systemd/nextdom.service
 
 STOPSIGNAL SIGRTMIN+3
+VOLUME /usr/share/nextdom
 VOLUME /var/lib/nextdom
 VOLUME /var/log/nextdom
 VOLUME /etc
-VOLUME /usr/share/nextdom
 EXPOSE 80
 EXPOSE 443
 
