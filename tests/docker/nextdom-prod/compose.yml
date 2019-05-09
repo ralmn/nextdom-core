@@ -1,6 +1,7 @@
 version: "3.5"
 services:
   db:
+    container_name: nextdom-db
     image: mysql:8
     restart: always
     command: --default-authentication-plugin=mysql_native_password
@@ -16,20 +17,20 @@ services:
       MYSQL_PASSWORD_FILE: /run/secrets/mysql-password
       MYSQL_USER: nextdom
       MYSQL_DATABASE: nextdom
+    networks:
+      - nextdom
 
   nextdom-prod:
     image: nextdom/nextdom-core:prod
     restart: always
-    container_name: nextdom
-    #privileged: true
-    # networks:
-    #   - default
+    container_name: nextdom-core
     ports:
       - 3580:80
       - 35443:443
     tmpfs:
       - /run
       - /tmp
+      - /tmp/nextdom
       - /run/lock
     cap_add:
       - SYS_BOOT
@@ -54,6 +55,8 @@ services:
       MYSQL_PORT: 3306
       MYSQL_DATABASE: nextdom
       MYSQL_USER: nextdom
+    networks:
+      - nextdom
     build:
       context: ../../../
       dockerfile: tests/docker/nextdom-prod/Dockerfile
@@ -67,7 +70,6 @@ services:
         - org.label-schema.vcs-ref="$VCS_REF"
         - org.label-schema.vendor="nextdom"
         - org.label-schema.version="$BUILD_VERSION"
-
-# networks:
-#   default:
-#     name: nextdom
+networks:
+  nextdom:
+    name: nextdom

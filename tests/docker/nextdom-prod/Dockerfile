@@ -41,11 +41,6 @@ RUN bash ./scripts/gen_composer_npm.sh && \
 # final image #
 ###############
 FROM debian:stretch-slim
-STOPSIGNAL SIGRTMIN+3
-VOLUME /var/lib/nextdom
-VOLUME /var/log/nextdom
-EXPOSE 80
-EXPOSE 443
 
 # install run dependencies
 RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
@@ -74,5 +69,13 @@ COPY --from=builder /usr/share/nextdom ./
 COPY tests/docker/conf/systemd/nextdom.service  /usr/share/nextdom/systemd/
 COPY tests/docker/conf/systemd/nextdom          /usr/share/nextdom/systemd/
 RUN systemctl enable /usr/share/nextdom/systemd/nextdom.service
+
+STOPSIGNAL SIGRTMIN+3
+VOLUME /var/lib/nextdom
+VOLUME /var/log/nextdom
+VOLUME /etc
+VOLUME /usr/share/nextdom
+EXPOSE 80
+EXPOSE 443
 
 CMD ["/sbin/init"]
