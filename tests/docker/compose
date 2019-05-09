@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 set_root() {
   local this=$(readlink -n -f $1)
   local bin=$(dirname $this)
@@ -26,10 +28,12 @@ case $1 in
 esac
 shift
 
-
-BUILD_VERSION=$(git describe --exact-match --tags $(git log -n1 --pretty='%h') 2>/dev/null || echo local-dev)
+BUILD_VERSION=$(git describe --exact-match --tags $(git log -n1 --pretty='%h') 2>/dev/null || echo local)
 BUILD_DATE=$(date -u +'%Y-%m-%dT%H:%M:%SZ')
 VCS_REF=$(git rev-parse HEAD)
+[[ -n $(git status -s) ]] && {
+  VCS_REF="${VCS_REF}-dirty"
+}
 
 export BUILD_VERSION
 export BUILD_DATE

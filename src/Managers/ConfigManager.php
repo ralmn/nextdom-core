@@ -169,7 +169,7 @@ class ConfigManager
             );
             $sql = 'DELETE FROM ' . self::DB_CLASS_NAME . '
                     WHERE `key` = :key
-                        AND `plugin` = :plugin';
+                      AND `plugin` = :plugin';
             DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
             if (isset(self::$cache[$pluginId . '::' . $configKey])) {
                 unset(self::$cache[$pluginId . '::' . $configKey]);
@@ -240,7 +240,7 @@ class ConfigManager
         $sql = 'SELECT `key`,`value`
                 FROM ' . self::DB_CLASS_NAME . '
                 WHERE `key` IN ' . $keys . '
-                    AND plugin=:plugin';
+                    AND `plugin` = :plugin';
         $values = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL);
         $result = array();
         foreach ($values as $value) {

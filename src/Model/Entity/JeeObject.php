@@ -189,7 +189,7 @@ class JeeObject implements EntityInterface
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE father_id = :id';
+                WHERE `father_id` = :id';
             if ($_visible) {
                 $sql .= ' AND isVisible = 1 ';
             }

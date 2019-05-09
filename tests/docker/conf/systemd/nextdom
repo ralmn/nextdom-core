@@ -1,0 +1,34 @@
+#!/bin/bash
+set -e
+
+if [ -f /var/lib/nextdom/installed ]; then
+    echo "nextdom already installed, exiting"
+    exit 0
+fi
+
+# read env-variables passed by docker to /bin/init
+for e in $(tr "\000" "\n" < /proc/1/environ | grep MYSQL); do
+  eval "export $e"
+done
+
+if [ -f "${MYSQL_ROOT_PASSWORD_FILE}" ]; then
+    MYSQL_ROOT_PASSWORD=$(cat "${MYSQL_ROOT_PASSWORD_FILE}")
+fi
+if [ -f "${MYSQL_PASSWORD_FILE}" ]; then
+    MYSQL_PASSWORD=$(cat "${MYSQL_PASSWORD_FILE}")
+fi
+
+echo "installing nextdom...."
+/usr/share/nextdom/install/postinst \
+    -i ${MYSQL_HOST:-mysql} \
+    -z ${MYSQL_PORT:-3306} \
+    -d ${MYSQL_DATABASE:-nextdom} \
+    -u ${MYSQL_USER:-nextdom} \
+    -p ${MYSQL_PASSWORD:-nextdom} \
+    -r ${MYSQL_ROOT_PASSWORD} \
+    -v || {
+  echo "failed to initialize nextdom"
+  exit 1
+}
+
+touch /var/lib/nextdom/installed

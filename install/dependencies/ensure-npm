@@ -1,8 +1,9 @@
 #!/bin/bash
-
+set -e
+set -x
 npm --version > /dev/null 2>&1 || {
     tmpFile=$(mktemp)
-		wget -q https://deb.nodesource.com/setup_10.x -O ${tmpFile}
+		curl -sSL https://deb.nodesource.com/setup_10.x -o ${tmpFile}
     bash ${tmpFile}
 		apt install -y nodejs
     rm -f ${tmpFile}

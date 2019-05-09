@@ -62,7 +62,7 @@ class ObjectManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id = :id';
+                WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -80,7 +80,7 @@ class ObjectManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE name=:name';
+                WHERE `name` = :name';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -98,7 +98,7 @@ class ObjectManager
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . ' ';
         if ($onlyVisible) {
-            $sql .= ' WHERE isVisible = 1';
+            $sql .= ' WHERE `isVisible` = 1';
         }
         $sql .= ' ORDER BY position,name,father_id';
         return DBHelper::Prepare($sql, array(), DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
@@ -119,11 +119,11 @@ class ObjectManager
         $fetchType = DBHelper::FETCH_TYPE_ALL;
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE father_id IS NULL';
+                WHERE `father_id` IS NULL';
         if ($onlyVisible) {
-            $sql .= ' AND isVisible = 1';
+            $sql .= ' AND `isVisible` = 1';
         }
-        $sql .= ' ORDER BY position';
+        $sql .= ' ORDER BY `position`';
         if ($all === false) {
             $sql .= ' LIMIT 1';
             $fetchType = DBHelper::FETCH_TYPE_ROW;

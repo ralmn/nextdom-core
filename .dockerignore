@@ -1,3 +1,8 @@
 .git
 plugins
 vendor
+var
+data
+tests
+!tests/docker/conf/**
+public

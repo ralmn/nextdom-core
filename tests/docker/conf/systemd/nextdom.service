@@ -1,0 +1,12 @@
+[Unit]
+Description=Nextdom first-start script
+After=apache2.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/share/nextdom/systemd/nextdom
+Environment=HOME=/root
+
+[Install]
+WantedBy=multi-user.target

@@ -35,6 +35,7 @@
 namespace NextDom\Managers;
 
 use NextDom\Model\Entity\Cron;
+use NextDom\Exceptions\CoreException;
 
 class ConsistencyManager {
     private static $defaultSummary = array(
@@ -63,7 +64,7 @@ class ConsistencyManager {
             self::resetCommandsActionID();
             self::ensureUserFunctionExists();
         } catch (\Exception $e) {
-            throw CoreException("error while checking system consistency: " . $e->getMessage());
+            throw new CoreException("error while checking system consistency: " . $e->getMessage());
         }
     }
 

@@ -95,7 +95,7 @@ class CmdManager
         }
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id IN (' . $in . ')';
+                WHERE `id` IN (' . $in . ')';
         return self::cast(DBHelper::Prepare($sql, array(), DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
     }
 
@@ -116,7 +116,7 @@ class CmdManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id = :id';
+                WHERE `id` = :id';
         return self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME));
     }
 
@@ -147,8 +147,8 @@ class CmdManager
                 FROM ' . self::DB_CLASS_NAME . ' c
                 INNER JOIN eqLogic el ON c.eqLogic_id=el.id
                 INNER JOIN object ob ON el.object_id=ob.id
-                WHERE isHistorized=1
-                AND type=\'info\'';
+                WHERE `isHistorized` = 1
+                AND `type`=\'info\'';
         $sql .= ' ORDER BY ob.position, ob.name, el.name, c.name';
         $result1 = self::cast(DBHelper::Prepare($sql, array(), DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME, 'c') . '
@@ -179,14 +179,14 @@ class CmdManager
         if (is_array($eqLogicId)) {
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE eqLogic_id IN (' . trim(preg_replace('/[, ]{2,}/m', ',', implode(',', $eqLogicId)), ',') . ')';
+                    WHERE `eqLogic_id` IN (' . trim(preg_replace('/[, ]{2,}/m', ',', implode(',', $eqLogicId)), ',') . ')';
         } else {
             $values = array(
                 'eqLogic_id' => $eqLogicId,
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE eqLogic_id = :eqLogic_id ';
+                    WHERE `eqLogic_id` = :eqLogic_id ';
         }
         if ($_type !== null) {
             $values['type'] = $_type;
@@ -217,7 +217,7 @@ class CmdManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE logicalId = :logicalId ';
+                WHERE `logicalId` = :logicalId ';
         if ($type !== null) {
             $values['type'] = $type;
             $sql .= 'AND `type`=:type ';
@@ -245,14 +245,14 @@ class CmdManager
             $values = array();
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE generic_type IN (' . trim(preg_replace('/[, ]{2,}/m', ',', $in), ',') . ')';
+                    WHERE `generic_type` IN (' . trim(preg_replace('/[, ]{2,}/m', ',', $in), ',') . ')';
         } else {
             $values = array(
                 'generic_type' => $genericType,
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE generic_type=:generic_type';
+                    WHERE `generic_type` = :generic_type';
         }
         if ($eqLogicId !== null) {
             $values['eqLogic_id'] = $eqLogicId;

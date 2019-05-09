@@ -70,14 +70,14 @@ class MessageManager
         $sql = 'DELETE FROM ' . self::DB_CLASS_NAME;
         if ($_plugin != '') {
             $values['plugin'] = $_plugin;
-            $sql .= ' WHERE plugin=:plugin';
+            $sql .= ' WHERE `plugin` = :plugin';
             if ($_logicalId != '') {
                 if ($_search) {
                     $values['logicalId'] = '%' . $_logicalId . '%';
-                    $sql .= ' AND logicalId LIKE :logicalId';
+                    $sql .= ' AND `logicalId` LIKE :logicalId';
                 } else {
                     $values['logicalId'] = $_logicalId;
-                    $sql .= ' AND logicalId=:logicalId';
+                    $sql .= ' AND `logicalId` = :logicalId';
                 }
             }
         }
@@ -101,7 +101,7 @@ class MessageManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE id=:id';
+        WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -119,8 +119,8 @@ class MessageManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE logicalId=:logicalId
-        AND plugin=:plugin';
+        WHERE `logicalId` = :logicalId
+        AND `plugin` = :plugin';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -131,7 +131,7 @@ class MessageManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE plugin=:plugin
+        WHERE `plugin` = :plugin
         ORDER BY date DESC';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }

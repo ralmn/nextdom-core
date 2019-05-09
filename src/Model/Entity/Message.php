@@ -93,8 +93,8 @@ class Message implements EntityInterface
             );
             $sql = 'SELECT count(*)
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE plugin = :plugin
-                    AND message = :message';
+                    WHERE `plugin`  = :plugin
+                    AND   `message` = :message';
             $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
         } else {
             $values = array(
@@ -103,8 +103,8 @@ class Message implements EntityInterface
             );
             $sql = 'SELECT count(*)
             FROM message
-            WHERE plugin=:plugin
-            AND logicalId=:logicalId';
+            WHERE `plugin`    = :plugin
+            AND   `logicalId` = :logicalId';
             $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
         }
         if ($result['count(*)'] != 0) {

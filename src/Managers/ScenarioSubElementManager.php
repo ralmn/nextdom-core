@@ -55,7 +55,7 @@ class ScenarioSubElementManager
         $values = array('id' => $id);
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id = :id';
+                WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -76,7 +76,7 @@ class ScenarioSubElementManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE scenarioElement_id=:scenarioElement_id ';
+                WHERE `scenarioElement_id` = :scenarioElement_id ';
         if ($filterByType != '') {
             $values['type'] = $filterByType;
             $sql .= ' AND type=:type ';

@@ -48,7 +48,7 @@ class PlanManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE id = :id';
+        WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -59,7 +59,7 @@ class PlanManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE planHeader_id = :planHeader_id';
+        WHERE `planHeader_id` = :planHeader_id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -71,8 +71,8 @@ class PlanManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE link_type = :link_type
-        AND link_id = :link_id';
+        WHERE `link_type` = :link_type
+        AND `link_id` = :link_id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -85,9 +85,9 @@ class PlanManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE link_type = :link_type
-        AND link_id = :link_id
-        AND planHeader_id = :planHeader_id';
+        WHERE `link_type` = :link_type
+        AND `link_id` = :link_id
+        AND `planHeader_id` = :planHeader_id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -99,9 +99,9 @@ class PlanManager
             'planHeader_id' => $_planHeader_id,
         );
         $sql = 'DELETE FROM ' . self::DB_CLASS_NAME . '
-        WHERE link_type = :link_type
-        AND link_id = :link_id
-        AND planHeader_id = :planHeader_id';
+        WHERE `link_type` = :link_type
+        AND `link_id` = :link_id
+        AND `planHeader_id` = :planHeader_id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -119,7 +119,7 @@ class PlanManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE display LIKE :search';
+        WHERE `display` LIKE :search';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -131,8 +131,8 @@ class PlanManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE configuration LIKE :search
-        AND link_type != :not';
+        WHERE `configuration` LIKE :search
+        AND `link_type` != :not';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 }

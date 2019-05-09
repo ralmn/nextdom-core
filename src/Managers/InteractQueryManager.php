@@ -58,7 +58,7 @@ class InteractQueryManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id=:id';
+                WHERE `id` = :id';
 
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
@@ -70,10 +70,10 @@ class InteractQueryManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE query=:query';
+                WHERE `query` = :query';
         if ($_interactDef_id !== null) {
             $values['interactDef_id'] = $_interactDef_id;
-            $sql .= ' AND interactDef_id=:interactDef_id';
+            $sql .= ' AND `interactDef_id` = :interactDef_id';
         }
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
@@ -85,7 +85,7 @@ class InteractQueryManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE interactDef_id=:interactDef_id
+                WHERE `interactDef_id` = :interactDef_id
                 ORDER BY `query`';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
@@ -103,17 +103,17 @@ class InteractQueryManager
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE actions LIKE :actions';
+                    WHERE `actions` LIKE :actions';
         } else {
             $values = array(
                 'actions' => '%' . $_action[0] . '%',
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE actions LIKE :actions';
+                    WHERE `actions` LIKE :actions';
             for ($i = 1; $i < count($_action); $i++) {
                 $values['actions' . $i] = '%' . $_action[$i] . '%';
-                $sql .= ' OR actions LIKE :actions' . $i;
+                $sql .= ' OR `actions` LIKE :actions' . $i;
             }
         }
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
@@ -137,7 +137,7 @@ class InteractQueryManager
             'interactDef_id' => $_interactDef_id,
         );
         $sql = 'DELETE FROM ' . self::DB_CLASS_NAME . '
-                WHERE interactDef_id = :interactDef_id';
+                WHERE `interactDef_id` = :interactDef_id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -172,7 +172,7 @@ class InteractQueryManager
         if (count($queries) == 0) {
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE query=:query';
+                    WHERE `query` = :query';
             $query = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
             if (is_object($query)) {
                 $interactDef = $query->getInteractDef();

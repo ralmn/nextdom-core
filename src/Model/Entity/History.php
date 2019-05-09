@@ -98,8 +98,8 @@ class History
                 );
                 $sql = 'SELECT `value`
                 FROM history
-                WHERE cmd_id=:cmd_id
-                AND `datetime`=:datetime';
+                WHERE `cmd_id` = :cmd_id
+                AND `datetime` = :datetime';
                 $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
                 if ($result !== false) {
                     switch ($cmd->getConfiguration('historizeMode', 'avg')) {

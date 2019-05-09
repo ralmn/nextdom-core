@@ -78,7 +78,7 @@ class CronManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id = :id';
+                WHERE `id` = :id';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -100,8 +100,8 @@ class CronManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE class = :class
-                AND function = :function';
+                WHERE `class`    = :class
+                AND   `function` = :function';
         if ($options != '') {
             $options = json_encode($options, JSON_UNESCAPED_UNICODE);
             $value['option'] = $options;
@@ -128,8 +128,8 @@ class CronManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE class = :class
-                AND function = :function';
+                WHERE `class`    = :class
+                AND   `function` = :function';
         if ($options != '') {
             $value['option'] = '%' . $options . '%';
             $sql .= ' AND `option` LIKE :option';

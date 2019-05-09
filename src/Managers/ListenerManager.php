@@ -60,7 +60,7 @@ class ListenerManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE id=:id';
+        WHERE `id` = :id';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -71,7 +71,7 @@ class ListenerManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE class=:class';
+        WHERE `class` = :class';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -83,12 +83,12 @@ class ListenerManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE class=:class
-        AND function=:function';
+        WHERE `class` = :class
+        AND `function` = :function';
         if ($_option != '') {
             $_option = json_encode($_option, JSON_UNESCAPED_UNICODE);
             $value['option'] = $_option;
-            $sql .= ' AND `option`=:option';
+            $sql .= ' AND `option` = :option';
         }
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
@@ -102,8 +102,8 @@ class ListenerManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE class=:class
-        AND function=:function
+        WHERE `class` = :class
+        AND `function` = :function
         AND `option` LIKE :option';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
@@ -117,9 +117,9 @@ class ListenerManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE class=:class
-        AND function=:function
-        AND event=:event';
+        WHERE `class` = :class
+        AND `function` = :function
+        AND `event` = :event';
         return DBHelper::Prepare($sql, $value, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -131,9 +131,9 @@ class ListenerManager
             'event' => $_event,
         );
         $sql = 'DELETE FROM ' . self::DB_CLASS_NAME . '
-        WHERE class=:class
-        AND function=:function
-        AND event=:event';
+        WHERE `class` = :class
+        AND `function` = :function
+        AND `event` = :event';
         if ($_option != '') {
             $_option = json_encode($_option, JSON_UNESCAPED_UNICODE);
             $value['option'] = $_option;

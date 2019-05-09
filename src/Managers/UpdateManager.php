@@ -197,7 +197,7 @@ class UpdateManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::DB_CLASS_NAME) . '
                 FROM `' . self::DB_CLASS_NAME . '`
-                WHERE id=:id';
+                WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -214,7 +214,7 @@ class UpdateManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::DB_CLASS_NAME) . '
                 FROM `' . self::DB_CLASS_NAME . '`
-                WHERE status=:status';
+                WHERE `status` = :status';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -231,7 +231,7 @@ class UpdateManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::DB_CLASS_NAME) . '
                 FROM `' . self::DB_CLASS_NAME . '`
-                WHERE logicalId=:logicalId';
+                WHERE `logicalId` = :logicalId';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -249,7 +249,7 @@ class UpdateManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::DB_CLASS_NAME) . '
                 FROM `' . self::DB_CLASS_NAME . '`
-                WHERE type=:type';
+                WHERE `type` = :type';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -269,8 +269,8 @@ class UpdateManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::DB_CLASS_NAME) . '
                 FROM `' . self::DB_CLASS_NAME . '`
-                WHERE logicalId=:logicalId
-                AND type=:type';
+                WHERE `logicalId` = :logicalId
+                AND `type` = :type';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -287,7 +287,7 @@ class UpdateManager
                 FROM `' . self::DB_CLASS_NAME . '` ';
         if ($filter != '') {
             $values['type'] = $filter;
-            $sql .= 'WHERE `type`=:type ';
+            $sql .= 'WHERE `type` = :type ';
         }
         $sql .= 'ORDER BY FIELD( `status`, "update","ok","depreciated") ASC,FIELD( `type`,"plugin","core") DESC, `name` ASC';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
@@ -304,10 +304,10 @@ class UpdateManager
         $values['status'] = 'update';
         $sql = 'SELECT count(*)
                FROM `' . self::DB_CLASS_NAME . '`
-               WHERE status=:status';
+               WHERE `status` = :status';
         if ($filter != '') {
            $values['type'] = $filter;
-           $sql .= ' AND type=:type';
+           $sql .= ' AND `type` = :type';
         }
 
         $result = \DB::Prepare($sql, $values, \DB::FETCH_TYPE_ROW);
@@ -355,7 +355,7 @@ class UpdateManager
                     'type' => $pluginId,
                 );
                 $sql = 'DELETE FROM `' . self::DB_CLASS_NAME . '`
-                        WHERE type=:type';
+                        WHERE `type` = :type';
                 DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
             }
         }

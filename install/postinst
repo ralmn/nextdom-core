@@ -181,7 +181,7 @@ step_nextdom_mysql_parameters() {
 
   # slow start of docker mysql
   try=0
-  while [ ${try} -lt 5 ]; do
+  while [ ${try} -lt 24 ]; do
     mysql -uroot ${HOSTPASS} -e "SHOW DATABASES;" >/dev/null 2>&1 || {
       try=$((try + 1))
       sleep 5
@@ -399,7 +399,7 @@ step_nextdom_mysql_configuration() {
   srcConfig="${root}/install/mysql/nextdom_my.cnf"
 
   # check that mysql is locally installed before any further configuration
-  mysqladmin -uroot ${HOSTPASS} status >/dev/null 2>/dev/null || {
+  service mysql status >/dev/null 2>&1 || {
     return 0
   }
 
@@ -672,6 +672,4 @@ EOS
   fi
 }
 
-date -R
 main $@
-date -R

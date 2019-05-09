@@ -65,7 +65,7 @@ class ScenarioExpressionManager
         $values = array('id' => $id);
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id = :id';
+                WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -100,7 +100,7 @@ class ScenarioExpressionManager
         $values = array('scenarioSubElement_id' => $scenarioSubElementId);
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE scenarioSubElement_id = :scenarioSubElement_id
+                WHERE `scenarioSubElement_id` = :scenarioSubElement_id
                 ORDER BY `order`';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
@@ -121,7 +121,7 @@ class ScenarioExpressionManager
         $values = array('expression' => '%' . $expression . '%');
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE expression LIKE :expression ';
+                WHERE `expression` LIKE :expression ';
         if ($options !== null) {
             $values['options'] = '%' . $options . '%';
             if ($and) {
@@ -145,7 +145,7 @@ class ScenarioExpressionManager
         $values = array('expression' => $elementId);
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE expression = :expression
+        WHERE `expression` = :expression
         AND `type` = "element"';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }

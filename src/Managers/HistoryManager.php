@@ -80,11 +80,11 @@ class HistoryManager
             'source_id' => $source_cmd->getId(),
         );
         $sql = 'REPLACE INTO ' . self::DB_CLASS_NAME . ' (`cmd_id`,`datetime`,`value`)
-                SELECT ' . $target_cmd->getId() . ',`datetime`,`value` FROM ' . self::DB_CLASS_NAME . ' WHERE cmd_id=:source_id';
+                SELECT ' . $target_cmd->getId() . ',`datetime`,`value` FROM ' . self::DB_CLASS_NAME . ' WHERE `cmd_id` = :source_id';
         DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
 
         $sql = 'REPLACE INTO `historyArch` (`cmd_id`,`datetime`,`value`)
-                SELECT ' . $target_cmd->getId() . ',`datetime`,`value` FROM `historyArch` WHERE cmd_id=:source_id';
+                SELECT ' . $target_cmd->getId() . ',`datetime`,`value` FROM `historyArch` WHERE `cmd_id` = :source_id';
         DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
     }
 
@@ -103,21 +103,21 @@ class HistoryManager
         }
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM history
-        WHERE cmd_id=:cmd_id
-        AND `datetime`>=:startTime
-        AND `datetime`<=:endTime';
+        WHERE `cmd_id` = :cmd_id
+        AND `datetime` >= :startTime
+        AND `datetime` <= :endTime';
         if ($_oldValue != null) {
-            $sql .= ' AND `value`=:oldValue';
+            $sql .= ' AND `value` = :oldValue';
         }
         $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
         if (!is_object($result)) {
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
             FROM historyArch
-            WHERE cmd_id=:cmd_id
-            AND `datetime`>=:startTime
-            AND `datetime`<=:endTime';
+            WHERE `cmd_id` = :cmd_id
+            AND `datetime` >= :startTime
+            AND `datetime` <= :endTime';
             if ($_oldValue != null) {
-                $sql .= ' AND `value`=:oldValue';
+                $sql .= ' AND `value` = :oldValue';
             }
             $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, 'historyArch');
             if (is_object($result)) {
@@ -163,7 +163,7 @@ class HistoryManager
         );
         $sql = 'SELECT DISTINCT(cmd_id)
         FROM history
-        WHERE `datetime`<:archiveDatetime';
+        WHERE `datetime` < :archiveDatetime';
         $list_sensors = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL);
         foreach ($list_sensors as $sensors) {
             $cmd = CmdManager::byId($sensors['cmd_id']);
@@ -177,7 +177,7 @@ class HistoryManager
                         'cmd_id' => $cmd->getId(),
                         'datetime' => $purgeTime,
                     );
-                    $sql = 'DELETE FROM historyArch WHERE cmd_id=:cmd_id AND `datetime` < :datetime';
+                    $sql = 'DELETE FROM historyArch WHERE `cmd_id` = :cmd_id AND `datetime` < :datetime';
                     DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
                 }
             }
@@ -187,7 +187,7 @@ class HistoryManager
                 );
                 $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM history
-                    WHERE cmd_id=:cmd_id ORDER BY `datetime` ASC';
+                    WHERE `cmd_id` = :cmd_id ORDER BY `datetime` ASC';
                 $history = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
 
                 $countHistory = count($history);
@@ -209,7 +209,7 @@ class HistoryManager
                 );
                 $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM historyArch
-                    WHERE cmd_id=:cmd_id ORDER BY datetime ASC';
+                    WHERE `cmd_id` = :cmd_id ORDER BY `datetime` ASC';
                 $history = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
                 $countHistory = count($history);
                 for ($i = 1; $i < $countHistory; $i++) {
@@ -226,8 +226,8 @@ class HistoryManager
             );
             $sql = 'SELECT MIN(`datetime`) as oldest
                     FROM history
-                    WHERE `datetime`<:archiveDatetime
-                    AND cmd_id=:cmd_id';
+                    WHERE `datetime` < :archiveDatetime
+                    AND `cmd_id` = :cmd_id';
             $oldest = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
 
             $mode = $cmd->getConfiguration('historizeMode', 'avg');
@@ -243,7 +243,7 @@ class HistoryManager
                         FROM_UNIXTIME(AVG(UNIX_TIMESTAMP(`datetime`))) as datetime
                         FROM history
                         WHERE addtime(`datetime`,:archivePackage)<:oldest
-                        AND cmd_id=:cmd_id';
+                        AND `cmd_id` = :cmd_id';
                 $avg = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
 
                 $history = new History();
@@ -259,8 +259,8 @@ class HistoryManager
                     'archivePackage' => '-' . $archivePackage,
                 );
                 $sql = 'DELETE FROM history
-                        WHERE addtime(`datetime`,:archivePackage)<:oldest
-                        AND cmd_id=:cmd_id';
+                        WHERE addtime(`datetime`,:archivePackage) < :oldest
+                        AND `cmd_id` = :cmd_id';
                 DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
 
                 $values = array(
@@ -269,8 +269,8 @@ class HistoryManager
                 );
                 $sql = 'SELECT MIN(`datetime`) as oldest
                         FROM history
-                        WHERE `datetime`<:archiveDatetime
-                        AND cmd_id=:cmd_id';
+                        WHERE `datetime` < :archiveDatetime
+                        AND `cmd_id` = :cmd_id';
                 $oldest = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
             }
         }
@@ -298,24 +298,24 @@ class HistoryManager
 
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
             FROM history
-            WHERE cmd_id=:cmd_id ';
+            WHERE `cmd_id` = :cmd_id ';
         if ($_startTime !== null) {
-            $sql .= ' AND datetime>=:startTime';
+            $sql .= ' AND `datetime` >= :startTime';
         }
         if ($_endTime !== null) {
-            $sql .= ' AND datetime<=:endTime';
+            $sql .= ' AND `datetime` <= :endTime';
         }
         $sql .= ' ORDER BY `datetime` ASC';
         $result1 = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
 
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
             FROM historyArch
-            WHERE cmd_id=:cmd_id ';
+            WHERE `cmd_id` = :cmd_id ';
         if ($_startTime !== null) {
-            $sql .= ' AND `datetime`>=:startTime';
+            $sql .= ' AND `datetime` >= :startTime';
         }
         if ($_endTime !== null) {
-            $sql .= ' AND `datetime`<=:endTime';
+            $sql .= ' AND `datetime` <= :endTime';
         }
         $sql .= ' ORDER BY `datetime` ASC';
         $result2 = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, 'historyArch');
@@ -336,23 +336,23 @@ class HistoryManager
         }
 
         $sql = 'DELETE FROM history
-            WHERE cmd_id=:cmd_id ';
+            WHERE `cmd_id` = :cmd_id ';
         if ($_startTime !== null) {
-            $sql .= ' AND datetime>=:startTime';
+            $sql .= ' AND `datetime` >= :startTime';
         }
         if ($_endTime !== null) {
-            $sql .= ' AND datetime<=:endTime';
+            $sql .= ' AND `datetime` <= :endTime';
         }
         $sql .= ' ORDER BY `datetime` ASC';
         DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
 
         $sql = 'DELETE FROM historyArch
-            WHERE cmd_id=:cmd_id ';
+            WHERE `cmd_id` = :cmd_id ';
         if ($_startTime !== null) {
-            $sql .= ' AND `datetime`>=:startTime';
+            $sql .= ' AND `datetime` >= :startTime';
         }
         if ($_endTime !== null) {
-            $sql .= ' AND `datetime`<=:endTime';
+            $sql .= ' AND `datetime` <= :endTime';
         }
         $sql .= ' ORDER BY `datetime` ASC';
         DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
@@ -414,18 +414,18 @@ class HistoryManager
             FROM (
         ' . $select . '
         FROM history
-        WHERE cmd_id=:cmd_id ';
+        WHERE `cmd_id` = :cmd_id ';
         if ($_startTime !== null) {
-            $sql .= ' AND datetime>=:startTime';
+            $sql .= ' AND `datetime` >= :startTime';
         }
         if ($_endTime !== null) {
-            $sql .= ' AND datetime<=:endTime';
+            $sql .= ' AND `datetime` <= :endTime';
         }
         $sql .= $groupBy;
         $sql .= ' UNION ALL
         ' . $select . '
         FROM historyArch
-        WHERE cmd_id=:cmd_id';
+        WHERE `cmd_id` = :cmd_id';
         if ($_startTime !== null) {
             $sql .= ' AND `datetime`>=:startTime';
         }
@@ -450,15 +450,15 @@ class HistoryManager
         FROM (
             SELECT *
             FROM history
-            WHERE cmd_id=:cmd_id
-            AND `datetime`>=:startTime
-            AND `datetime`<=:endTime
+            WHERE `cmd_id` = :cmd_id
+            AND `datetime` >= :startTime
+            AND `datetime` <= :endTime
             UNION ALL
             SELECT *
             FROM historyArch
-            WHERE cmd_id=:cmd_id
-            AND `datetime`>=:startTime
-            AND `datetime`<=:endTime
+            WHERE `cmd_id` = :cmd_id
+            AND `datetime` >= :startTime
+            AND `datetime` <= :endTime
         ) as dt';
         $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
         if (!is_array($result)) {
@@ -473,15 +473,15 @@ class HistoryManager
         FROM (
             SELECT *
             FROM history
-            WHERE cmd_id=:cmd_id
-            AND `datetime`>=:startTime
-            AND `datetime`<=:endTime
+            WHERE `cmd_id` = :cmd_id
+            AND `datetime` >= :startTime
+            AND `datetime` <= :endTime
             UNION ALL
             SELECT *
             FROM historyArch
-            WHERE cmd_id=:cmd_id
-            AND `datetime`>=:startTime
-            AND `datetime`<=:endTime
+            WHERE `cmd_id` = :cmd_id
+            AND `datetime` >= :startTime
+            AND `datetime` <= :endTime
         ) as dt
         ORDER BY `datetime` DESC
         LIMIT 1';
@@ -730,13 +730,13 @@ class HistoryManager
                 FROM (
                     SELECT *
                     FROM history
-                    WHERE cmd_id=:cmd_id' . $_dateTime . '
+                    WHERE `cmd_id` = :cmd_id' . $_dateTime . '
                     UNION ALL
                     SELECT *
                     FROM historyArch
-                    WHERE cmd_id=:cmd_id' . $_dateTime . '
+                    WHERE `cmd_id` = :cmd_id' . $_dateTime . '
                 ) as t1
-                WHERE cmd_id=:cmd_id' . $_dateTime . '
+                WHERE `cmd_id` = :cmd_id' . $_dateTime . '
             ) as t1
             where ' . $_condition;
         $result = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
@@ -751,12 +751,12 @@ class HistoryManager
         if ($_date != '') {
             $values['date'] = $_date;
         }
-        $sql = 'DELETE FROM history WHERE cmd_id=:cmd_id';
+        $sql = 'DELETE FROM history WHERE `cmd_id` = :cmd_id';
         if ($_date != '') {
             $sql .= ' AND `datetime` <= :date';
         }
         DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW);
-        $sql = 'DELETE FROM historyArch WHERE cmd_id=:cmd_id';
+        $sql = 'DELETE FROM historyArch WHERE `cmd_id` = :cmd_id';
         if ($_date != '') {
             $sql .= ' AND `datetime` <= :date';
         }

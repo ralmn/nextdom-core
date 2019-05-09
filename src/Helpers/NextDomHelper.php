@@ -1300,8 +1300,8 @@ class NextDomHelper
         $starttime = Utils::getMicrotime();
         for ($i = 0; $i < $param['database_write_delete']; $i++) {
             $sql = 'DELETE FROM config
-                    WHERE `key`="nextdom_benchmark"
-                    AND plugin="core"';
+                    WHERE `key`    = "nextdom_benchmark"
+                    AND   `plugin` = "core"';
             try {
                 DBHelper::Prepare($sql, array(), DBHelper::FETCH_TYPE_ROW);
             } catch (\Exception $e) {
@@ -1327,8 +1327,8 @@ class NextDomHelper
         for ($i = 0; $i < $param['database_update']; $i++) {
             $sql = 'UPDATE `config`
                     SET `value`=:value
-                    WHERE `key` = "nextdom_benchmark"
-                        AND plugin = "core"';
+                    WHERE `key`    = "nextdom_benchmark"
+                      AND `plugin` = "core"';
             try {
                 DBHelper::Prepare($sql, array('value' => $i), DBHelper::FETCH_TYPE_ROW);
             } catch (\Exception $e) {

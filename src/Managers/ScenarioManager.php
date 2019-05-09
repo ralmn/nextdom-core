@@ -60,7 +60,7 @@ class ScenarioManager
     public static function byId($id)
     {
         $values = array('id' => $id);
-        $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . ' FROM ' . self::DB_CLASS_NAME . ' WHERE id = :id';
+        $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . ' FROM ' . self::DB_CLASS_NAME . ' WHERE `id` = :id';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -76,7 +76,7 @@ class ScenarioManager
     public static function byName(string $name)
     {
         $values = array('name' => $name);
-        $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . ' FROM ' . self::DB_CLASS_NAME . ' WHERE name = :name';
+        $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . ' FROM ' . self::DB_CLASS_NAME . ' WHERE `name` = :name';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME);
     }
 
@@ -196,7 +196,7 @@ class ScenarioManager
         $values = array('cmd_id' => '%#' . $cmdId . '#%');
         $sql = 'SELECT ' . DBHelper::buildField(self::DB_CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME . '
-        WHERE mode != "schedule" AND `trigger` LIKE :cmd_id';
+        WHERE `mode` != "schedule" AND `trigger` LIKE :cmd_id';
         if ($onlyEnabled) {
             $sql .= ' AND isActive = 1';
         }
@@ -239,16 +239,16 @@ class ScenarioManager
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
         FROM ' . self::DB_CLASS_NAME;
         if ($objectId === null) {
-            $sql .= ' WHERE object_id IS NULL';
+            $sql .= ' WHERE `object_id` IS NULL';
         } else {
             $values['object_id'] = $objectId;
-            $sql .= ' WHERE object_id = :object_id';
+            $sql .= ' WHERE `object_id` = :object_id';
         }
         if ($onlyEnabled) {
-            $sql .= ' AND isActive = 1';
+            $sql .= ' AND `isActive` = 1';
         }
         if ($onlyVisible) {
-            $sql .= ' AND isVisible = 1';
+            $sql .= ' AND `isVisible` = 1';
         }
         $sql .= ' ORDER BY `order`';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME);
@@ -391,7 +391,7 @@ class ScenarioManager
         ];
 
         foreach ($tablesToClean as $table => $item) {
-            $sql = 'DELETE FROM ' . $table . ' WHERE id NOT IN (-1';
+            $sql = 'DELETE FROM ' . $table . ' WHERE `id` NOT IN (-1';
             foreach ($ids[$item] as $expressionId) {
                 $sql .= ',' . $expressionId;
             }

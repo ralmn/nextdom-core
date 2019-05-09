@@ -61,7 +61,7 @@ class EqLogicManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE id = :id';
+                WHERE `id` = :id';
         return self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ROW, \PDO::FETCH_CLASS, self::CLASS_NAME));
     }
 
@@ -108,7 +108,7 @@ class EqLogicManager
                 FROM ' . self::DB_CLASS_NAME . ' el
                 LEFT JOIN object ob ON el.object_id = ob.id ';
         if ($onlyEnable) {
-            $sql .= 'WHERE isEnable = 1 ';
+            $sql .= 'WHERE `isEnable` = 1 ';
         }
         $sql .= 'ORDER BY ob.name, el.name';
         return self::cast(DBHelper::Prepare($sql, array(), DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
@@ -129,7 +129,7 @@ class EqLogicManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE eqReal_id = :eqReal_id';
+                WHERE `eqReal_id` = :eqReal_id';
         return self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
     }
 
@@ -153,10 +153,10 @@ class EqLogicManager
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . ' ';
         if ($objectId === null) {
-            $sql .= 'WHERE object_id IS NULL ';
+            $sql .= 'WHERE `object_id` IS NULL ';
         } else {
             $values['object_id'] = $objectId;
-            $sql .= 'WHERE object_id = :object_id ';
+            $sql .= 'WHERE `object_id` = :object_id ';
         }
         if ($onlyEnable) {
             $sql .= 'AND isEnable = 1 ';
@@ -198,8 +198,8 @@ class EqLogicManager
         ];
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE logicalId = :logicalId
-                AND eqType_name = :eqType_name';
+                WHERE `logicalId` = :logicalId
+                AND `eqType_name` = :eqType_name';
         if ($multiple) {
             $data = self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
         } else {
@@ -224,7 +224,7 @@ class EqLogicManager
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME, 'el') . '
                 FROM ' . self::DB_CLASS_NAME . '  el
                 LEFT JOIN object ob ON el.object_id = ob.id
-                WHERE eqType_name = :eqType_name ';
+                WHERE `eqType_name` = :eqType_name ';
         if ($onlyEnable) {
             $sql .= 'AND isEnable=1 ';
         }
@@ -248,7 +248,7 @@ class EqLogicManager
 
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE category LIKE :category
+                WHERE `category` LIKE :category
                 OR category LIKE :category2
                 ORDER BY name';
         return self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
@@ -270,9 +270,9 @@ class EqLogicManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE eqType_name = :eqType_name
-                AND configuration LIKE :configuration
-                ORDER BY name';
+                WHERE `eqType_name` = :eqType_name
+                AND `configuration` LIKE :configuration
+                ORDER BY `name`';
         return self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
     }
 
@@ -292,24 +292,24 @@ class EqLogicManager
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE configuration LIKE :configuration';
+                    WHERE `configuration` LIKE :configuration';
         } else {
             $values = array(
                 'configuration' => '%' . $configuration[0] . '%',
             );
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE configuration LIKE :configuration';
+                    WHERE `configuration` LIKE :configuration';
             for ($i = 1; $i < count($configuration); $i++) {
                 $values['configuration' . $i] = '%' . $configuration[$i] . '%';
-                $sql .= ' OR configuration LIKE :configuration' . $i;
+                $sql .= ' OR `configuration` LIKE :configuration' . $i;
             }
         }
         if ($type !== null) {
             $values['eqType_name'] = $type;
-            $sql .= ' AND eqType_name=:eqType_name ';
+            $sql .= ' AND `eqType_name` = :eqType_name ';
         }
-        $sql .= ' ORDER BY name';
+        $sql .= ' ORDER BY `name`';
         return self::cast(DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL, \PDO::FETCH_CLASS, self::CLASS_NAME));
     }
 
@@ -332,9 +332,9 @@ class EqLogicManager
             $sql = 'SELECT DISTINCT(el.id),el.name
                     FROM ' . self::DB_CLASS_NAME . '  el
                     INNER JOIN cmd c ON c.eqLogic_id = el.id
-                    WHERE eqType_name = :eqType_name
+                    WHERE `eqType_name` = :eqType_name
                     AND c.type = :typeCmd
-                    ORDER BY name';
+                    ORDER BY `name`';
             return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL);
         } else {
             $values = array(
@@ -345,10 +345,10 @@ class EqLogicManager
             $sql = 'SELECT DISTINCT(el.id),el.name
                     FROM ' . self::DB_CLASS_NAME . '  el
                     INNER JOIN cmd c ON c.eqLogic_id = el.id
-                    WHERE eqType_name = :eqType_name
+                    WHERE `eqType_name` = :eqType_name
                     AND c.type = :typeCmd
                     AND c.subType = :subTypeCmd
-                    ORDER BY name';
+                    ORDER BY `name`';
             return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL);
         }
     }
@@ -370,10 +370,10 @@ class EqLogicManager
                 INNER JOIN cmd c ON c.eqLogic_id=el.id
                 WHERE ';
         if ($objectId === null) {
-            $sql .= 'object_id IS NULL ';
+            $sql .= '`object_id` IS NULL ';
         } elseif ($objectId != '') {
             $values['object_id'] = $objectId;
-            $sql .= 'object_id = :object_id ';
+            $sql .= '`object_id` = :object_id ';
         } else {
             return null;
         }
@@ -385,7 +385,7 @@ class EqLogicManager
             $values['type'] = $typeCmd;
             $sql .= 'AND c.type = :type ';
         }
-        $sql .= 'ORDER BY name';
+        $sql .= 'ORDER BY `name`';
         return DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL);
     }
 
@@ -464,7 +464,7 @@ class EqLogicManager
         );
         $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE timeout >= :timeout';
+                WHERE `timeout` >= :timeout';
         if ($onlyEnable) {
             $sql .= ' AND isEnable = 1';
         }
@@ -487,8 +487,8 @@ class EqLogicManager
             ];
             $sql = 'SELECT ' . DBHelper::buildField(self::CLASS_NAME) . '
                     FROM ' . self::DB_CLASS_NAME . '
-                    WHERE name=:eqLogic_name
-                    AND object_id IS NULL';
+                    WHERE `name` = :eqLogic_name
+                    AND `object_id` IS NULL';
         } else {
             $values = array(
                 'eqLogic_name' => $eqLogicName,
@@ -672,8 +672,8 @@ class EqLogicManager
         $values = array();
         $sql = 'SELECT tags
                 FROM ' . self::DB_CLASS_NAME . '
-                WHERE tags IS NOT NULL
-        	    AND tags!=""';
+                WHERE `tags` IS NOT NULL
+        	    AND   `tags` != ""';
         $results = DBHelper::Prepare($sql, $values, DBHelper::FETCH_TYPE_ALL);
         $return = array();
         foreach ($results as $result) {
