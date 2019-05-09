@@ -3,8 +3,8 @@ services:
   core:
     image: nextdom/nextdom-core:prod
     build:
-      context: ../../
-      dockerfile: docker/nextdom/Dockerfile
+      context: ../../..
+      dockerfile: docker/build/prod/Dockerfile
       labels:
         - org.label-schema.schema-version="1.0"
         - org.label-schema.build-date="$BUILD_DATE"

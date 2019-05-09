@@ -9,25 +9,19 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
     apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      software-properties-common \
-      gnupg \
-      wget && \
-    add-apt-repository non-free && \
-    apt-get clean autoclean && \
-    apt-get autoremove -y && \
-    rm -fr /var/lib/{apt,dpkg,cache,log}/
-
-
-# install nextdom debian dependencies
-COPY ./tests/docker/conf/apt/nextdom-apt.list /etc/apt/sources.list.d/
-ADD  http://debian.nextdom.org/debian/nextdom.gpg.key nextdom.gpg.key
-RUN apt-key add nextdom.gpg.key && \
+      software-properties-common gnupg wget && \
     apt-get update -y && \
-    apt-get install -y  nextdom-mysql nextdom-minimal && \
+    apt-get install -y --no-install-recommends \
+      mysql-server mysql-client grep \
+      sed bash coreutils apache2 apache2-utils libexpat1 ssl-cert ntp ca-certificates \
+      unzip curl sudo cron locate tar wget logrotate dos2unix ntpdate htop iotop iftop \
+      smbclient git python python-pip software-properties-common libexpat1 ssl-cert \
+      apt-transport-https cutycapt mysql-client mysql-common php php-curl php-gd php-imap \
+      php-json php-mcrypt php-mysql php-xml php-soap php-xmlrpc libapache2-mod-php php-common \
+      php-zip php-ssh2 php-mbstring && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -fr /var/lib/{apt,dpkg,cache,log}/
-
+    rm -fr /var/lib/apt/lists/*
 
 # pre-install dev dependencies (would habe been installed by postint)
 COPY ./install/dependencies/ensure-npm      /tmp/
@@ -42,13 +36,13 @@ RUN /tmp/ensure-npm      && \
     /tmp/ensure-minify   && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -fr /var/lib/{apt,dpkg,cache,log}/ && \
-    rm -f /tmp/ensure-{npm,yarn,composer,sass,minify} && \
+    rm -fr /var/lib/apt/lists/* && \
+    rm -f /tmp/ensure-* && \
     npm cache rm --force && \
     composer clearcache
 
-COPY tests/docker/nextdom-test/start.sh  /start.sh
-COPY tests/docker/nextdom-test/launch.sh /launch.sh
+COPY docker/build/test/start.sh  /start.sh
+COPY docker/build/test/launch.sh /launch.sh
 
 VOLUME /data
 ENTRYPOINT ["/usr/bin/env"]

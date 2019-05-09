@@ -5,7 +5,7 @@ set -e
 set_root() {
   local this=$(readlink -n -f $1)
   local bin=$(dirname $this)
-  root=$(dirname $bin)
+  root=$(dirname $(dirname $bin))
 }
 
 set_root $0
@@ -14,13 +14,13 @@ cd ${root}
 args=""
 case $1 in
   "dev")
-    args="-f ${root}/docker/nextdom-dev/compose.yml"
+    args="-f ${root}/docker/build/dev/docker-compose.yml"
     ;;
   "test")
-    args="-f ${root}/docker/nextdom-test/compose.yml"
+    args="-f ${root}/docker/build/test/docker-compose.yml"
     ;;
   "prod")
-    args="-f ${root}/docker/nextdom/compose.yml"
+    args="-f ${root}/docker/build/prod/docker-compose.yml"
     ;;
   *)
     echo "usage: compose { dev | test | prod } [ docker-compose-options ]"

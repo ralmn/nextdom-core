@@ -32,10 +32,7 @@ RUN bash ./scripts/gen_composer_npm.sh && \
     bash ./scripts/gen_assets.sh && \
     npm cache rm --force && \
     composer clearcache && \
-    rm -rf \
-      .coveralls.yml .dockerignore .github .gitignore .sass-cache \
-      .travis.yml composer.json composer.lock package.json phpunit.xml.dist \
-      yarn.lock var
+    rm -rf var
 
 ###############
 # final image #
@@ -66,8 +63,8 @@ WORKDIR /usr/share/nextdom
 COPY --from=builder /usr/share/nextdom ./
 
 # register nextdom service, that runs postint on first run
-COPY docker/conf/systemd/nextdom.service  /usr/share/nextdom/systemd/
-COPY docker/conf/systemd/nextdom          /usr/share/nextdom/systemd/
+COPY docker/build/prod/nextdom.service  /usr/share/nextdom/systemd/
+COPY docker/build/prod/nextdom          /usr/share/nextdom/systemd/
 RUN systemctl enable /usr/share/nextdom/systemd/nextdom.service
 
 STOPSIGNAL SIGRTMIN+3
