@@ -51,7 +51,7 @@ RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
       libapache2-mod-php libexpat1 libexpat1 locate make ntp \
       ntpdate php php-common php-curl php-gd php-imap php-json php-mbstring \
       php-mcrypt php-mysql php-opcache php-soap php-ssh2 php-xml php-xmlrpc \
-      php-zip python python-pip sed  smbclient software-properties-common \
+      php-zip python python-pip sed  smbclient \
       ssl-cert sudo systemd systemd-sysv tar telnet unzip vim  wget xvfb \
       mysql-client && \
     apt-get clean autoclean && \

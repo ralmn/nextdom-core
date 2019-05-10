@@ -22,3 +22,4 @@ docker
 !docker/build/dev/*.service
 !docker/build/prod/*.service
 !docker/build/prod/nextdom
+!docker/build/common/**

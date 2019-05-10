@@ -4,7 +4,7 @@ services:
     image: nextdom/nextdom-core:dev
     container_name: nextdom-dev
     networks:
-      - default
+      - nextdom-dev
     ports:
       - 8764:80
       - 8763:443
@@ -41,5 +41,5 @@ services:
       args:
         with_samba: 1
 networks:
-  default:
+  nextdom-dev:
     name: nextdom-dev

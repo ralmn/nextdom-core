@@ -9,13 +9,10 @@ ENV DEBIAN_FRONTEND noninteractive
 RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
     apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      software-properties-common gnupg wget && \
-    apt-get update -y && \
-    apt-get install -y --no-install-recommends \
-      mysql-server mysql-client grep \
-      sed bash coreutils apache2 apache2-utils libexpat1 ssl-cert ntp ca-certificates \
+      mysql-server grep gnupg \
+      sed bash coreutils apache2 apache2-utils ntp ca-certificates \
       unzip curl sudo cron locate tar wget logrotate dos2unix ntpdate htop iotop iftop \
-      smbclient git python python-pip software-properties-common libexpat1 ssl-cert \
+      smbclient git python python-pip libexpat1 ssl-cert \
       apt-transport-https cutycapt mysql-client mysql-common php php-curl php-gd php-imap \
       php-json php-mcrypt php-mysql php-xml php-soap php-xmlrpc libapache2-mod-php php-common \
       php-zip php-ssh2 php-mbstring && \

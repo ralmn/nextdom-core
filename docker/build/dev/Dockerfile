@@ -1,35 +1,18 @@
 FROM debian:stretch-slim
 MAINTAINER info@nextdom.com
 
-ENV locale-gen fr_FR.UTF-8
-ENV APACHE_PORT 80
-ENV APACHE_PORT 443
-ENV MODE_HOST 0
-ENV APT_KEY_DONT_WARN_ON_DANGEROUS_USAGE=DontWarn
-ENV DEBIAN_FRONTEND noninteractive
-
-RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
-    apt-get update  -y && \
-    apt-get install -y --no-install-recommends software-properties-common && \
-    add-apt-repository non-free && \
-    apt-get clean autoclean && \
-    apt-get autoremove -y && \
-    rm -fr /var/lib/apt/lists/*
-
 # install nextdom runtime dependencies
-RUN apt-get update -y && \
+COPY docker/build/common/apt-source-non-free.list /etc/apt/sources.list.d/
+COPY docker/build/common/apt-package-list         /tmp/apt-package-list
+RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
+    apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      systemd systemd-sysv gnupg wget \
-      openssl apache2 bash sudo tar wget curl lsb-release ntp logrotate ntpdate \
-      git python python-pip libexpat1 ssl-cert apt-transport-https cutycapt xauth \
-      duplicity libav-tools libsox-fmt-mp3 sox libttspico-utils php php-curl php-gd \
-      php-imap php-json php-mcrypt php-mysql php-xml php-soap php-xmlrpc \
-      libapache2-mod-php php-common php-dev php-zip php-ssh2 php-mbstring php-ldap \
-      composer mysql-server mysql-client grep sed bash coreutils unzip \
-      locate telnet dos2unix htop iotop vim iftop smbclient xvfb gcc g++ make && \
+      $(cat /tmp/apt-package-list) \
+      php-dev \
+      mysql-server && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -fr /var/lib/apt/lists/*
+    rm -fr /var/lib/apt/lists/* /tmp/apt-package-list
 
 # pre-install dev dependencies
 COPY install/dependencies/ensure-npm      /tmp/
@@ -44,10 +27,10 @@ RUN /tmp/ensure-npm      && \
     /tmp/ensure-minify   && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
-    rm -fr /var/lib/{apt,dpkg,cache,log}/ && \
-    rm -f /tmp/ensure-{npm,yarn,composer,sass,minify} && \
     npm cache rm --force && \
-    composer clearcache
+    composer clearcache && \
+    rm -fr /var/lib/apt/lists/* && \
+    rm -f /tmp/ensure-*
 
 # optional built-in configured samba server
 ARG  with_samba
@@ -55,7 +38,7 @@ COPY docker/build/dev/with_samba.sh /tmp/
 RUN  bash /tmp/with_samba.sh && \
      apt-get clean autoclean && \
      apt-get autoremove -y && \
-     rm -fr /var/lib/{apt,dpkg,cache,log}/ && \
+     rm -fr /var/lib/apt/lists/* && \
      rm -f /tmp/with_samba.sh
 
 #fix apparmor bug when dockerd host is ubuntu:bionic-beaver

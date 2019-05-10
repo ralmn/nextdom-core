@@ -1,10 +1,10 @@
 version: "3.5"
 services:
-  nextdom-test:
+  core:
     image: nextdom/nextdom-core:test
     container_name: nextdom-test
     networks:
-      - default
+      - nextdom-test
     ports:
       - 8765:80
     volumes:
@@ -25,5 +25,5 @@ services:
         - org.label-schema.vendor="nextdom"
         - org.label-schema.version="$BUILD_VERSION"
 networks:
-  default:
+  nextdom-test:
     name: nextdom-test
