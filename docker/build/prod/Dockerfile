@@ -40,20 +40,11 @@ RUN bash ./scripts/gen_composer_npm.sh && \
 FROM debian:stretch-slim
 
 # install run dependencies
+COPY docker/build/common/apt-source-non-free.list /etc/apt/sources.list.d/
+COPY docker/build/common/apt-package-list         /tmp/apt-package-list
 RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
-    apt-get update  -y && \
-    apt-get install -y --no-install-recommends \
-      software-properties-common && \
-    add-apt-repository non-free && \
-    apt-get install -y --no-install-recommends \
-      apache2 apache2-utils apt-transport-https ca-certificates coreutils \
-      cron curl cutycapt dos2unix g++ gcc git gnupg grep htop iftop iotop \
-      libapache2-mod-php libexpat1 libexpat1 locate make ntp \
-      ntpdate php php-common php-curl php-gd php-imap php-json php-mbstring \
-      php-mcrypt php-mysql php-opcache php-soap php-ssh2 php-xml php-xmlrpc \
-      php-zip python python-pip sed  smbclient \
-      ssl-cert sudo systemd systemd-sysv tar telnet unzip vim  wget xvfb \
-      mysql-client && \
+    apt-get update -y && \
+    apt-get install -y --no-install-recommends $(cat /tmp/apt-package-list) && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*

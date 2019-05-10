@@ -23,7 +23,6 @@ libttspico-utils
 locate
 make
 mysql-client
-mysql-server
 ntp
 ntpdate
 openssl

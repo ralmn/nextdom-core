@@ -1,21 +1,13 @@
 FROM debian:stretch-slim
 MAINTAINER info@nextdom.com
 
-ENV locale-gen fr_FR.UTF-8
-ENV APACHE_PORT 80
-ENV APACHE_PORT 443
-ENV DEBIAN_FRONTEND noninteractive
-
+COPY docker/build/common/apt-source-non-free.list /etc/apt/sources.list.d/
+COPY docker/build/common/apt-package-list         /tmp/apt-package-list
 RUN echo "127.0.1.1 $HOSTNAME" >> /etc/hosts && \
     apt-get update -y && \
     apt-get install -y --no-install-recommends \
-      mysql-server grep gnupg \
-      sed bash coreutils apache2 apache2-utils ntp ca-certificates \
-      unzip curl sudo cron locate tar wget logrotate dos2unix ntpdate htop iotop iftop \
-      smbclient git python python-pip libexpat1 ssl-cert \
-      apt-transport-https cutycapt mysql-client mysql-common php php-curl php-gd php-imap \
-      php-json php-mcrypt php-mysql php-xml php-soap php-xmlrpc libapache2-mod-php php-common \
-      php-zip php-ssh2 php-mbstring && \
+      $(cat /tmp/apt-package-list) \
+      php-dev mysql-server && \
     apt-get clean autoclean && \
     apt-get autoremove -y && \
     rm -fr /var/lib/apt/lists/*
