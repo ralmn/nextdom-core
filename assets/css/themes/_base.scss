@@ -77,6 +77,14 @@
   border-color: map_get($color_theme, 'color1') !important;
 }
 
+/* Box & Panel headers */
+.box.box-primary {
+  border-top-color: map_get($color_theme, 'color1') !important;
+}
+.panel.panel-primary .panel-heading {
+  background-color: map_get($color_theme, 'color1') !important;
+}
+
 /* Elements actifs ou survolés */
 .main-header .logo:hover {
   background-color: map_get($color_theme, 'color1') !important;
@@ -318,6 +326,11 @@
   background-color: map_get($color_theme, 'color6') !important;
 }
 
+.box-header.with-border,
+.panel-heading.with-border {
+    border-bottom: 1px solid map_get($color_theme, 'color6') !important;
+}
+
 
 /* ########################################################################## */
 /* COLOR7 = Couleur de fond principale (dashboard et autres fond de pages...) */
@@ -349,7 +362,8 @@
   background-color: map_get($color_theme, 'color7') !important;
 }
 
-.box-header.with-border{
+.box-header.with-border,
+.panel-heading.with-border{
   border-color: map_get($color_theme, 'color7') !important;
 }
 

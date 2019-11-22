@@ -47,8 +47,9 @@ $NEXTDOM_INTERNAL_CONFIG = array(
     ),
     'nextdom' => array(
         'sources' => array(
-            array('name' => 'NextDom Stable', 'type' => 'json', 'code' => 'nextdom_stable', 'data' => 'https://raw.githubusercontent.com/NextDom/AlternativeMarket-Lists/master/results/nextdom-stable.json'),
-            array('name' => 'NextDom draft', 'type' => 'json', 'code' => 'nextdom_draft', 'data' => 'https://raw.githubusercontent.com/NextDom/AlternativeMarket-Lists/master/results/nextdom-draft.json')
+            array('name' => 'Stable', 'type' => 'json', 'code' => 'nextdom_stable', 'data' => 'https://raw.githubusercontent.com/NextDom/AlternativeMarket-Lists/master/results/nextdom-stable.json'),
+            array('name' => 'Draft', 'type' => 'json', 'code' => 'nextdom_draft', 'data' => 'https://raw.githubusercontent.com/NextDom/AlternativeMarket-Lists/master/results/nextdom-draft.json'),
+            array('name' => 'Exclusivités', 'type' => 'json', 'code' => 'nextdom_exclusivity', 'data' => 'https://raw.githubusercontent.com/NextDom/AlternativeMarket-Lists/master/results/nextdom-exclusivity.json')
         )
     ),
     'plugin' => array(

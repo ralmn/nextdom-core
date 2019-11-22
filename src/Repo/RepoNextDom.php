@@ -49,6 +49,10 @@ class RepoNextDom
                 'name' => 'repo.nextdom.conf.draft',
                 'type' => 'checkbox',
             ),
+            'nextdom_exclusivity' => array(
+                'name' => 'repo.nextdom.conf.exclusivity',
+                'type' => 'checkbox',
+            ),
             'show_sources_filters' => array(
                 'name' => 'repo.nextdom.conf.filters',
                 'type' => 'checkbox',
