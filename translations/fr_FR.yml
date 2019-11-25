@@ -544,8 +544,8 @@ scenario:
   execute-title: Veuillez sauvegarder avant de tester. Ceci peut ne pas aboutir.
   export: Exporter
   expression-test: Testeur d'expression
-  follow: Suivi
-  follow-timeline: Suivre dans la timeline
+  follow: Activer Suivi
+  follow-timeline: Dans la timeline
   follow-timeline-title: Les exécutions du scénario pourront être vues dans la timeline.
   group: Groupe
   icon: Icône

@@ -243,8 +243,9 @@
     .CodeMirror-scroll {
         max-height: 300px !important;
     }
-    .expressionAttr.scenario-text {
-        resize: vertical;
+    .expressionAttr.scenario-text,
+    textarea.scenarioAttr {
+        resize: vertical !important;
     }
     .expression-error {
         text-decoration: underline;

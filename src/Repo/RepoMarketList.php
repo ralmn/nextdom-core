@@ -9,7 +9,7 @@ use NextDom\Managers\UpdateManager;
 
 AuthentificationHelper::isConnectedAsAdminOrFail();
 
-$searchLimit = Utils::init('limit', 100);
+$searchLimit = Utils::init('limit', 50);
 if ($searchLimit == 0) {
   $searchLimit = '';
 }
@@ -383,7 +383,7 @@ function displayWidgetSubtype($_name)
                         $default_image = 'public/img/NextDom_NoPicture_Gray.png';
                 }
                 $urlPath = ConfigManager::byKey('market::address') . '/' . $market->getImg('icon');
-                echo '<div><img class="lazy lazyload market-icon" src="' . $default_image . '" data-original="'. $urlPath . '"/></div>';
+                echo '<div><img class="lazy market-icon" src="' . $default_image . '" data-original="'. $urlPath . '"/></div>';
                 echo '<span class="market-name">' . $shortName . '</span>';
                 echo '<span class="market-author"><i>{{par}}</i> ' . $market->getAuthor() . '</span>';
                 echo '<span class="market-rating">';
@@ -425,37 +425,30 @@ function displayWidgetSubtype($_name)
 
 <script>
     $(function () {
-        $("img.lazy").lazyload();
         initTableSorter();
-        setTimeout(function(){
-            $('.pluginContainer').packery();
-        },200);
-        setTimeout(function () {
-            $('#table_market tbody tr.install').hide();
-        }, 500);
         $('.bt_pluginFilter').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href'));
+            $(this).closest("section").parent().load($(this).attr('data-href'));
         });
         $('#sel_certif').on('change', function () {
-            $('#md_modal').load($(this).attr('data-href') + '&certification=' + encodeURI($(this).value()));
+            $(this).closest("section").parent().load($(this).attr('data-href') + '&certification=' + encodeURI($(this).value()));
         });
         $('#sel_categorie').on('change', function () {
-            $('#md_modal').load($(this).attr('data-href') + '&categorie=' + encodeURI($(this).value()));
+            $(this).closest("section").parent().load($(this).attr('data-href') + '&categorie=' + encodeURI($(this).value()));
         });
         $('#bt_search').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href') + '&categorie=' + '&name=' + encodeURI($('#in_search').value()));
+            $(this).closest("section").parent().load($(this).attr('data-href') + '&categorie=' + '&name=' + encodeURI($('#in_search').value()));
         });
         $('#bt_resetSearch').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href'));
+            $(this).closest("section").parent().load($(this).attr('data-href'));
         });
         $('#in_search').keyup(function (e) {
             marketFilterRepo();
         });
         $('#bt_returnMarketList').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href'));
+            $(this).closest("section").parent().load($(this).attr('data-href'));
         });
         $('.marketMultiple').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href') + '&name=' + encodeURI('.' + $(this).attr('data-market_name')));
+            $(this).closest("section").parent().load($(this).attr('data-href') + '&name=' + encodeURI('.' + $(this).attr('data-market_name')));
         });
         $('.bt_installFilter').on('click', function () {
             $('.bt_installFilter').removeClass('btn-primary').removeClass('btn-default');
@@ -513,11 +506,20 @@ function displayWidgetSubtype($_name)
            $('#bt_marketCollapse').show()
         });
         $('#bt_resetSearchLimit').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href'));
+            $(this).closest("section").parent().load($(this).attr('data-href'));
         });
         $('#bt_SearchLimit').on('click', function () {
-            $('#md_modal').load($(this).attr('data-href'));
+            $(this).closest("section").parent().load($(this).attr('data-href'));
         });
+        setTimeout(function(){
+            $('.pluginContainer').packery();
+            $("img.lazy").lazyload({
+            	threshold : 400
+            });
+        }, 200);
+        setTimeout(function () {
+            $('#table_market tbody tr.install').hide();
+        }, 500);
     });
 
     function marketFilterRepo() {

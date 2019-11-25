@@ -66,6 +66,7 @@
   color: map_get($color_theme, 'color1') !important;
 }
 .li_noteDisplay.active .label-list,
+.li_scenarioTemplate.active .label-list,
 .li_view.active .label-view,
 .li_log.active .label-log {
   border-color: map_get($color_theme, 'color1') !important;
@@ -424,6 +425,9 @@
 .panel-default,
 .nav-tabs-custom .well {
   border-color: map_get($color_theme, 'color8') !important;
+}
+.nav-tabs-custom .marketOverload {
+  background-color: map_get($color_theme, 'color8') !important;
 }
 
 /* Action bar */

@@ -155,12 +155,6 @@ function initModalEvents() {
         modalContainer.load('index.php?v=d&modal=scenario.log.execution&scenario_id=' + $('.scenarioAttr[data-l1key=id]').value()).dialog('open');
     });
 
-    // Export modale open button
-    $('#bt_exportScenario').off('click').on('click', function () {
-        modalContainer.dialog({title: "{{Export du scénario}}"});
-        modalContainer.load('index.php?v=d&modal=scenario.export&scenario_id=' + $('.scenarioAttr[data-l1key=id]').value()).dialog('open');
-    });
-
     // Template modale open button
     $('#bt_templateScenario').off('click').on('click', function () {
         modalContainer.dialog({title: "{{Template de scénario}}"});
@@ -784,7 +778,7 @@ function setEditor() {
         modifyWithoutSave = false;
         lockModify = false;
         $(".bt_cancelModifs").hide();
-    }, 2000);    
+    }, 2000);
 }
 
 /**

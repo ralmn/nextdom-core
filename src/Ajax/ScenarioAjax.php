@@ -132,7 +132,7 @@ class ScenarioAjax extends BaseAjax
         if (!is_object($scenario)) {
             throw new CoreException(__('Scénario ID inconnu : ') . Utils::initInt(AjaxParams::ID));
         }
-        $path = NEXTDOM_DATA . '/config/scenario';
+        $path = NEXTDOM_DATA . '/data/scenario';
         if (!file_exists($path)) {
             mkdir($path);
         }
@@ -149,7 +149,7 @@ class ScenarioAjax extends BaseAjax
 
     public function removeTemplate()
     {
-        $templateFile = NEXTDOM_DATA . '/config/scenario/' . Utils::initFilename(AjaxParams::TEMPLATE);
+        $templateFile = NEXTDOM_DATA . '/data/scenario/' . Utils::initFilename(AjaxParams::TEMPLATE);
         if (file_exists($templateFile)) {
             unlink($templateFile);
         }
@@ -158,7 +158,7 @@ class ScenarioAjax extends BaseAjax
 
     public function loadTemplateDiff()
     {
-        $templateFile = NEXTDOM_DATA . '/config/scenario/' . Utils::initFilename(AjaxParams::TEMPLATE);
+        $templateFile = NEXTDOM_DATA . '/data/scenario/' . Utils::initFilename(AjaxParams::TEMPLATE);
         if (!file_exists($templateFile)) {
             throw new CoreException('Fichier non trouvé : ' . $templateFile);
         }
@@ -205,7 +205,7 @@ class ScenarioAjax extends BaseAjax
 
     public function applyTemplate()
     {
-        $templateFile = NEXTDOM_DATA . '/config/scenario/' . Utils::initFilename(AjaxParams::TEMPLATE);
+        $templateFile = NEXTDOM_DATA . '/data/scenario/' . Utils::initFilename(AjaxParams::TEMPLATE);
         if (!file_exists($templateFile)) {
             throw new CoreException('Fichier non trouvé : ' . $templateFile);
         }
@@ -462,7 +462,7 @@ class ScenarioAjax extends BaseAjax
 
     public function templateupload()
     {
-        $uploadDir = sprintf("%s/config/scenario/", NEXTDOM_DATA);
+        $uploadDir = NEXTDOM_DATA . '/data/scenario/';
         Utils::readUploadedFile($_FILES, "file", $uploadDir, 10, [".json"]);
         $this->ajax->success();
     }

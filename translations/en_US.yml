@@ -544,8 +544,8 @@ scenario:
   execute-title: Please save before testing. This may not succeed.
   export: Export
   expression-test: Expression test
-  follow: Following
-  follow-timeline: Follow in the Timeline
+  follow: Activate Following
+  follow-timeline: In the Timeline
   follow-timeline-title: The executions of the script can be seen in the timeline.
   group: Group
   icon: Icon
