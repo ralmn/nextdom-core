@@ -187,6 +187,12 @@
     font-size: 11px;
     padding: 13px 2px 0px 0px;
 }
+.scenario-bloc-focused {
+    border: 2px dashed !important;
+}
+.scenario-action-focused {
+    border: 2px dotted !important;
+}
 
 /* Boutons */
 .scenario-expand {

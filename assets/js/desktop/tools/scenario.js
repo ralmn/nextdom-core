@@ -37,6 +37,11 @@
 var tab = null;
 var editor = [];
 var GENERAL_TAB = 'generaltab';
+var PROGRAM_TAB = 'scenariotab';
+var SC_CLIPBOARD = null;
+var BLOC_FOCUS = null;
+var ACTION_FOCUS = null;
+var BLOC_LAST_FOCUS = false;
 var currentExpression = null;
 
 /**
@@ -402,6 +407,16 @@ function initGeneralFormEvents() {
  * Init events on the scenario editor
  */
 function initScenarioEditorEvents() {
+    // Programmation tab click
+    $('.scenarioEditTab').on("shown.bs.tab", function () {
+        $("#programActionBar").hide();
+        setHeaderPosition(false);
+    });
+    $('.scenarioProgramTab').on("shown.bs.tab", function () {
+        $("#programActionBar").show();
+        setHeaderPosition(false);
+    });
+
     // Bloc add button
     pageContainer.off('click', '.bt_addScenarioElement').on('click', '.bt_addScenarioElement', function (event) {
         var elementDiv = $(this).closest('.element');
@@ -579,6 +594,150 @@ function initScenarioEditorEvents() {
     pageContainer.off('mouseout', '.bt_sortable').on('mouseout', '.bt_sortable', function () {
         scenarioContainer.sortable("disable");
     });
+
+    // Bloc focusing
+    $('#div_scenarioElement').on('focus', ':input', function() {
+        $('.element').removeClass("scenario-bloc-focused");
+        $('.expression').removeClass("scenario-action-focused");
+        BLOC_FOCUS = $(this).closest('.element');
+        BLOC_FOCUS.addClass("scenario-bloc-focused");
+        if ($(this).closest(".expression").find(".expressionAttr[data-l1key='type']").filter(function() { return this.value == 'condition' }).length==0) {
+            ACTION_FOCUS = $(this).closest('.expression');
+            ACTION_FOCUS.addClass("scenario-action-focused");
+            BLOC_LAST_FOCUS = false;
+        } else {
+            ACTION_FOCUS = null;
+            BLOC_LAST_FOCUS = true;
+        }
+    })
+    $('#div_scenarioElement').on('click', '.scenario-title', function() {
+        $('.element').removeClass("scenario-bloc-focused");
+        BLOC_FOCUS = $(this).closest('.element');
+        BLOC_FOCUS.addClass("scenario-bloc-focused");
+        $("#bt_copyBloc").show();
+        $("#bt_pasteBloc").show();
+        BLOC_LAST_FOCUS = true;
+    })
+
+    // Bloc copy / cut
+    $('#bt_copyBloc').on('click', function (event) {
+        if (BLOC_FOCUS) {
+            SC_CLIPBOARD = BLOC_FOCUS.clone();
+            // CTRL key = CUT
+            if (event.ctrlKey) {
+                //setUndoStack()
+                BLOC_FOCUS.remove();
+            }
+        } else {
+            notify("Erreur", "Aucun bloc selectionné !", 'error');
+        }
+    });
+    $('#bt_copyAction').on('click', function (event) {
+        if (ACTION_FOCUS) {
+            SC_CLIPBOARD = ACTION_FOCUS.clone();
+            // CTRL key = CUT
+            if (event.ctrlKey) {
+                //setUndoStack()
+                ACTION_FOCUS.remove();
+            }
+        } else {
+            notify("Erreur", "Aucune action selectionnée !", 'error');
+        }
+    });
+
+    // Bloc paste / replace
+    $('#bt_pasteBloc').on('click', function (event) {
+        if (SC_CLIPBOARD && BLOC_FOCUS) {
+            var newColorIndex = getNextColorIndex();
+            //setUndoStack()
+            newBloc = $(SC_CLIPBOARD).clone();
+            newBloc.find('input[data-l1key="id"]').attr("value", "");
+            newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
+            newBloc.find('input[data-l1key="scenarioSubElement_id"]').attr("value", "");
+            if (newBloc.hasClass('element')) {
+                newBloc.css('background-color',listColorStrong[newColorIndex]);
+                newBloc.find('.empty').parent().css('background-color',listColor[newColorIndex]);
+            } else {
+                newBloc.find('.element').css('background-color',listColorStrong[newColorIndex]);
+                newBloc.find('.element').find('.empty').parent().css('background-color',listColor[newColorIndex]);
+            }
+            if (BLOC_LAST_FOCUS) {
+                if (newBloc.hasClass('expression') || BLOC_FOCUS.parent().hasClass('element')) {
+                    newBloc.insertAfter(BLOC_FOCUS);
+                } else {
+                    newDiv = '<div class="expression scenario-group sortable col-xs-12">';
+                    newDiv += '<input class="expressionAttr" data-l1key="type" style="display : none;" value="element">';
+                    newDiv += '<div class="col-xs-12" style="padding-right: 0px; padding-left: 0px;" id="insertHere">';
+                    newDiv += '</div>';
+                    newDiv += '</div>';
+                    if (BLOC_FOCUS.parent().parent().hasClass('expression')) {
+                        $(newDiv).insertAfter(BLOC_FOCUS.parent().parent());
+                    } else {
+                        $(newDiv).insertAfter(BLOC_FOCUS);
+                    }
+                    newBloc.appendTo('#insertHere');
+                    $('#insertHere').removeAttr('id');
+                }
+                // CTRL = REPLACE
+                if (event.ctrlKey) {
+                    BLOC_FOCUS.remove();
+                }
+            } else {
+                if (newBloc.hasClass('expression')) {
+                    newBloc.insertAfter(ACTION_FOCUS);
+                } else {
+                    newDiv = '<div class="expression scenario-group sortable col-xs-12">';
+                    newDiv += '<input class="expressionAttr" data-l1key="type" style="display : none;" value="element">';
+                    newDiv += '<div class="col-xs-12" style="padding-right: 0px; padding-left: 0px;" id="insertHere">';
+                    newDiv += '</div>';
+                    newDiv += '</div>';
+                    $(newDiv).insertAfter(ACTION_FOCUS);
+                    newBloc.appendTo('#insertHere');
+                    $('#insertHere').removeAttr('id');
+                }
+                // CTRL = REPLACE
+                if (event.ctrlKey) {
+                    ACTION_FOCUS.remove();
+                }
+            }
+            $('.element').removeClass("scenario-bloc-focused");
+            $('.expression').removeClass("scenario-action-focused");
+            BLOC_FOCUS = null;
+            ACTION_FOCUS = null;
+            updateSortable();
+        } else {
+            notify("Erreur", "Aucun bloc selectionné, ni copié !", 'error');
+        }
+    });
+    $('#bt_pasteAction').on('click', function (event) {
+        if (SC_CLIPBOARD && (ACTION_FOCUS || BLOC_FOCUS)) {
+            //setUndoStack()
+            newBloc = $(SC_CLIPBOARD).clone();
+            newBloc.find('input[data-l1key="id"]').attr("value", "");
+            newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
+            newBloc.find('input[data-l1key="scenarioSubElement_id"]').attr("value", "");
+            if (ACTION_FOCUS) {
+                newBloc.insertAfter(ACTION_FOCUS);
+                // CTRL = REPLACE
+                if (event.ctrlKey) {
+                    ACTION_FOCUS.remove();
+                }
+            } else {
+                newBloc.insertAfter(BLOC_FOCUS.find(".empty").first());
+                // CTRL = REPLACE
+                if (event.ctrlKey) {
+                    BLOC_FOCUS.remove();
+                }
+            }
+            $('.element').removeClass("scenario-bloc-focused");
+            $('.expression').removeClass("scenario-action-focused");
+            BLOC_FOCUS = null;
+            ACTION_FOCUS = null;
+            updateSortable();
+        } else {
+            notify("Erreur", "Aucun bloc ni action selectionné(e)s, ni copié(e)s !", 'error');
+        }
+    });
 }
 
 /**
@@ -589,6 +748,12 @@ function loadScenario(scenarioId, tabToShow) {
     printScenario(scenarioId);
     urlUpdate(scenarioId);
     $('.nav-tabs a[href="#' + tabToShow + '"]').tab('show');
+    if (tabToShow != PROGRAM_TAB) {
+        $("#programActionBar").hide();
+    } else {
+        $("#programActionBar").show();
+    }
+    setHeaderPosition(false);
 }
 
 /**
@@ -1008,6 +1173,7 @@ function saveScenario() {
         }
     });
     $('#bt_scenarioThumbnailDisplay').show();
+    SC_CLIPBOARD = null;
 }
 
 /**

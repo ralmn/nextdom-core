@@ -37,7 +37,7 @@
 <section class="content-header">
     <div class="action-bar">
         <div class="action-group">
-            <a class="btn btn-primary btn-action-bar btn-file"><i class="fas fa-cloud-upload-alt"></i>{{ 'Envoyer un template' }}
+            <a class="btn btn-primary btn-action-bar btn-file"><i class="fas fa-file-import"></i>{{ 'Importer un template' }}
                 <input id="bt_uploadScenarioTemplate" type="file" name="file" data-url="core/ajax/scenario.ajax.php?action=templateupload" style="display : inline-block;">
             </a>
         </div>
@@ -75,18 +75,8 @@
                             <label class="control-label">{{ 'Actions' }}</label>
                             <div class="mix-group">
                                 <a class="btn btn-danger" id="bt_scenarioTemplateRemove"><i class="fas fa-times"></i>{{ 'Supprimer' }}</a>
-                                <a class="btn btn-primary" id="bt_scenarioTemplateDownload"><i class="fas fa-cloud-download-alt"></i>{{ 'Télécharger' }}</a>
+                                <a class="btn btn-primary" id="bt_scenarioTemplateDownload"><i class="fas fa-file-export"></i>{{ 'Exporter' }}</a>
                                 <a class="btn btn-success" id="bt_scenarioTemplateApply"><i class="fas fa-check-circle"></i>{{ 'Appliquer au scénario actuel' }}</a>
-                            </div>
-                        </div>
-                        <div class="form-group col-xs-12 col-padding">
-                            <label class="control-label">{{ 'Partager sur' }}</label>
-                            <div class="mix-group">
-                                {% for repoCode, repoValues in repoList %}
-                                    {% if repoValues['enable'] and (repoValues['score']['hasScenarioStore'] or repoValues['scope']['hasScenarioStore']) %}
-                                        <a class="btn btn-warning bt_scenarioTemplateShare" data-repo="{{ repoCode }}"><i class="fas fa-cloud-upload-alt"></i>{{ repoValues['name'] }}</a>
-                                    {% endif %}
-                                {% endfor %}
                             </div>
                         </div>
                     </div>

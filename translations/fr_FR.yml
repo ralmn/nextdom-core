@@ -522,10 +522,12 @@ repo:
         url: "URL core NextDom"
         version: "Version core NextDom"
 scenario:
-  add-block: Ajouter un bloc
+  add-block: Ajouter bloc
   add-item: Ajouter élément
   choose: Choisir
   conditions: "Conditions"
+  copy-block: Copier bloc
+  copy-action: Copier action
   default : Défaut
   description: Description
   description-if: "Permet de faire des conditions dans votre scénario. Par exemple: Si mon détecteur d’ouverture de porte se déclenche Alors allumer la lumière."
@@ -574,6 +576,8 @@ scenario:
   options: Options
   parameters: Paramètres
   parent-object: Objet parent
+  paste-block: Coller bloc
+  paste-action: Coller action
   paternity: Paternité
   previous: Précédent
   programmation: Programmation

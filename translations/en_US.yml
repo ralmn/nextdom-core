@@ -522,10 +522,12 @@ repo:
         url: "NextDom core URL"
         version: "NextDom core version"
 scenario:
-  add-block: Add a block
+  add-block: Add block
   add-item: Add element
   choose: To choose
   conditions: "Conditions"
+  copy-block: Copy bloc
+  copy-action: Copy action
   default: Default
   description: Description
   description-if: "Lets make the conditions in your scenario. For example: If my door open sensor is triggered then turn on the light."
@@ -574,6 +576,8 @@ scenario:
   options: options
   parameters: Settings
   parent-object: parent object
+  paste-block: Paste bloc
+  paste-action: Paste action
   paternity: Paternity
   previous: Previous
   programmation: Programming

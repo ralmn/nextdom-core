@@ -46,17 +46,6 @@ function loadInformations() {
  * Init events on the profils page
  */
 function initEvents() {
-    // Share a template
-    $('.bt_scenarioTemplateShare').on('click', function () {
-        if ($('#ul_scenarioTemplateList li.active').attr('data-template') == undefined) {
-            notify("{{ Scénario }}", '{{ Vous devez d\'abord sélectionner un template }}', 'error');
-            return;
-        }
-        var logicalId = $('#ul_scenarioTemplateList li.active').attr('data-template').replace(".json", "");
-        $('#md_modal2').dialog({title: "{{ Partager sur le market }}"});
-        $('#md_modal2').load("index.php?v=d&modal=update.send&type=scenario&logicalid=" + encodeURI(logicalId) + "&name=" + encodeURI(logicalId) + "&repo=" + $(this).attr('data-repo')).dialog('open');
-    });
-
     // Create a template from ative scenario
     $('#bt_scenarioTemplateConvert').on('click', function () {
         bootbox.prompt("Nom du template ?", function (result) {
