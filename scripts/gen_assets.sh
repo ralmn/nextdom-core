@@ -174,6 +174,8 @@ function copy_assets {
 	cp -fr assets/icon public/
 	echo " >>> Copy images"
 	cp -fr assets/img public/
+  echo " >>> Copy html"
+	cp -fr assets/*.html public/
 	gen_css
 	gen_js
 }

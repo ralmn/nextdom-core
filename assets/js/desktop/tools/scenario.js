@@ -43,6 +43,11 @@ var BLOC_FOCUS = null;
 var ACTION_FOCUS = null;
 var BLOC_LAST_FOCUS = false;
 var currentExpression = null;
+var undoStack = new Array();
+var undoState = -1;
+var undoFirstState = 0;
+var undoLimit = 12;
+var undoRedo = 0;
 
 /**
  * List of colors for scenario elements
@@ -432,6 +437,7 @@ function initScenarioEditorEvents() {
 
         // Bloc add validation button
         $("#bt_addElementSave").off('click').on('click', function (event) {
+            setUndoStack();
             if (expression) {
                 elementDiv.append(addExpression({type: 'element', element: {type: $("#in_addElementType").value()}}));
             } else {
@@ -447,6 +453,7 @@ function initScenarioEditorEvents() {
 
     // Bloc remove button
     pageContainer.off('click', '.bt_removeElement').on('click', '.bt_removeElement', function (event) {
+        setUndoStack();
         if ($(this).closest('.expression').length !== 0) {
             $(this).closest('.expression').remove();
         } else {
@@ -456,6 +463,7 @@ function initScenarioEditorEvents() {
 
     // Bloc action add button
     pageContainer.off('click', '.bt_addAction').on('click', '.bt_addAction', function (event) {
+        setUndoStack();
         $(this).closest('.subElement').children('.expressions').append(addExpression({type: 'action'}));
         setAutocomplete();
         updateSortable();
@@ -480,6 +488,7 @@ function initScenarioEditorEvents() {
 
     // Bloc action expression clear
     pageContainer.off('click', '.bt_removeExpression').on('click', '.bt_removeExpression', function () {
+        setUndoStack();
         $(this).closest('.expression').remove();
         updateSortable();
     });
@@ -493,6 +502,7 @@ function initScenarioEditorEvents() {
     pageContainer.off('click', '.bt_selectOtherActionExpression').on('click', '.bt_selectOtherActionExpression', function (event) {
         var expression = $(this).closest('.expression');
         nextdom.getSelectActionModal({scenario: true}, function (result) {
+            setUndoStack();
             expression.find('.expressionAttr[data-l1key=expression]').value(result.human);
             nextdom.cmd.displayActionOption(expression.find('.expressionAttr[data-l1key=expression]').value(), '', function (html) {
                 expression.find('.expressionOptions').html(html);
@@ -591,9 +601,25 @@ function initScenarioEditorEvents() {
     });
 
     // Bloc dropping
+    pageContainer.on('mousedown','.bt_sortable',  function () {
+        setUndoStack();
+    });
     pageContainer.off('mouseout', '.bt_sortable').on('mouseout', '.bt_sortable', function () {
         scenarioContainer.sortable("disable");
     });
+
+    // Unod button
+    $('#bt_undo').on('click', function (event) {
+        undo();
+        BLOC_LAST_FOCUS = null;
+    });
+
+    // Unod button
+    $('#bt_redo').on('click', function (event) {
+        redo();
+        BLOC_LAST_FOCUS = null;
+    });
+
 
     // Bloc focusing
     $('#div_scenarioElement').on('focus', ':input', function() {
@@ -625,11 +651,11 @@ function initScenarioEditorEvents() {
             SC_CLIPBOARD = BLOC_FOCUS.clone();
             // CTRL key = CUT
             if (event.ctrlKey) {
-                //setUndoStack()
+                setUndoStack();
                 BLOC_FOCUS.remove();
             }
         } else {
-            notify("Erreur", "Aucun bloc selectionné !", 'error');
+            notify("Attention", "Aucun bloc selectionné !", 'warning');
         }
     });
     $('#bt_copyAction').on('click', function (event) {
@@ -637,11 +663,11 @@ function initScenarioEditorEvents() {
             SC_CLIPBOARD = ACTION_FOCUS.clone();
             // CTRL key = CUT
             if (event.ctrlKey) {
-                //setUndoStack()
+                setUndoStack();
                 ACTION_FOCUS.remove();
             }
         } else {
-            notify("Erreur", "Aucune action selectionnée !", 'error');
+            notify("Attention", "Aucune action selectionnée !", 'warning');
         }
     });
 
@@ -649,7 +675,7 @@ function initScenarioEditorEvents() {
     $('#bt_pasteBloc').on('click', function (event) {
         if (SC_CLIPBOARD && BLOC_FOCUS) {
             var newColorIndex = getNextColorIndex();
-            //setUndoStack()
+            setUndoStack();
             newBloc = $(SC_CLIPBOARD).clone();
             newBloc.find('input[data-l1key="id"]').attr("value", "");
             newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
@@ -706,12 +732,12 @@ function initScenarioEditorEvents() {
             ACTION_FOCUS = null;
             updateSortable();
         } else {
-            notify("Erreur", "Aucun bloc selectionné, ni copié !", 'error');
+            notify("Attention", "Aucun bloc selectionné, ni copié !", 'warning');
         }
     });
     $('#bt_pasteAction').on('click', function (event) {
         if (SC_CLIPBOARD && (ACTION_FOCUS || BLOC_FOCUS)) {
-            //setUndoStack()
+            setUndoStack();
             newBloc = $(SC_CLIPBOARD).clone();
             newBloc.find('input[data-l1key="id"]').attr("value", "");
             newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
@@ -735,7 +761,7 @@ function initScenarioEditorEvents() {
             ACTION_FOCUS = null;
             updateSortable();
         } else {
-            notify("Erreur", "Aucun bloc ni action selectionné(e)s, ni copié(e)s !", 'error');
+            notify("Attention", "Aucun bloc ni action selectionné(e)s, ni copié(e)s !", 'warning');
         }
     });
 }
@@ -811,6 +837,7 @@ function addScenario() {
                     modifyWithoutSave = false;
                     $('#scenarioThumbnailDisplay').hide();
                     $('#bt_scenarioThumbnailDisplay').hide();
+                    resetUndo();
                     printScenario(data.id);
                     urlUpdate(data.id);
                 }
@@ -832,6 +859,7 @@ function deleteScenario() {
                 },
                 success: function () {
                     modifyWithoutSave = false;
+                    resetUndo();
                     loadPage('index.php?v=d&p=scenario');
                     notify("Info", '{{Suppression effectuée avec succès}}', 'success');
                 }
@@ -1102,6 +1130,7 @@ function printScenario(scenarioId) {
                     $('#div_editScenario').show();
                     setEditor();
                     modifyWithoutSave = false;
+                    resetUndo();
                     $(".bt_cancelModifs").hide();
                 }
             });
@@ -1168,6 +1197,7 @@ function saveScenario() {
         },
         success: function (data) {
             modifyWithoutSave = false;
+            resetUndo();
             $(".bt_cancelModifs").hide();
             notify("Info", '{{Sauvegarde effectuée avec succès}}', 'success');
         }
@@ -2050,6 +2080,7 @@ function getBinaryExpressionHTML(humanResult) {
 function selectCmdExpression(elementData, expressionElement) {
     var type = 'info';
     if (expressionElement.find('.expressionAttr[data-l1key=type]').value() === 'action') {
+        setUndoStack();
         type = 'action';
     }
     nextdom.cmd.getSelectModal({cmd: {type: type}}, function (result) {
@@ -2077,7 +2108,7 @@ function selectCmdExpression(elementData, expressionElement) {
                     break;
             }
             bootbox.dialog({
-                title: "{{Ajout d'un nouveau scénario}}",
+                title: "{{Ajout d'une nouvelle condition}}",
                 message: message,
                 buttons: {
                     "Ne rien mettre": {
@@ -2090,6 +2121,7 @@ function selectCmdExpression(elementData, expressionElement) {
                         label: "Valider",
                         className: "btn-primary",
                         callback: function () {
+                            setUndoStack();
                             var condition = result.human;
                             var operatorValue = $('.conditionAttr[data-l1key=operator]').value();
                             var operandeValue = $('.conditionAttr[data-l1key=operande]').value();
@@ -2136,4 +2168,78 @@ function loadFromUrl() {
             loadScenario(scenarioIdFromUrl, tabCode);
         }
     }
+}
+
+/**
+ * Add undo state in stack
+ *
+ * @param state Données de la requête
+ */
+function setUndoStack(state = 0) {
+    // Capture active state and push in stack
+    newStack = $('#div_scenarioElement').clone()
+    if (newStack != undoStack[state-1]) {
+        if (state == 0) {
+            state = undoState = undoStack.length
+            undoRedo = 0
+        }
+        undoStack[state] = newStack
+        // limit stack
+        if (state >= undoFirstState + undoLimit) {
+            undoFirstState += 1
+            undoStack[undoFirstState -1] = 0
+        }
+    }
+}
+
+/**
+ * Undo state from stack
+ */
+function undo() {
+    if (undoState >= undoFirstState) {
+        try {
+            var loadState = undoState;
+            if (undoRedo == 0) {
+                setUndoStack(undoState + 1);
+            }
+            loadStack = undoStack[loadState];
+            $('#div_scenarioElement').replaceWith(loadStack);
+            $('.dropdown.open').dropdown("toggle");
+            undoState -= 1;
+        } catch(error) {
+            notify("Erreur d'undo", error, 'error');
+        }
+    } else {
+        notify("Attention", "La pile d'undo est vide", 'warning');
+    }
+}
+
+/**
+ * Redo state from stack
+ */
+function redo() {
+    undoRedo = 1
+    if (undoState >= undoFirstState -1 && undoState +2 < undoStack.length) {
+        try {
+            var loadState = undoState + 2;
+            loadStack = undoStack[loadState];
+            $('#div_scenarioElement').replaceWith(loadStack);
+            $('.dropdown.open').dropdown("toggle");
+            undoState += 1;
+        } catch(error) {
+            notify("Erreur de redo", error, 'error');
+        }
+    } else {
+        notify("Attention", "La pile de redo est vide", 'warning');
+    }
+}
+
+/**
+ * Reset undo/redo stack
+ */
+function resetUndo() {
+    undoStack = new Array();
+    undoState = -1;
+    undoFirstState = 0;
+    undoLimit = 10;
 }
