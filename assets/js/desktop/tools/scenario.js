@@ -505,6 +505,32 @@ function initScenarioEditorEvents() {
         setUndoStack();
     });
 
+    // Bloc add buttons
+    pageContainer.off('click','.fromSubElement').on( 'click','.fromSubElement ', function (event) {
+        var elementType = $(this).attr('data-type');
+        var elementDiv = $(this).closest('.element');
+        if (elementDiv.html() === undefined) {
+            elementDiv = scenarioContainer;
+        }
+        var expression = false;
+        if ($(this).hasClass('fromSubElement')) {
+            elementDiv = $(this).closest('.subElement').find('.expressions').eq(0);
+            expression = true;
+        }
+        clearRedoStack();
+        if (expression) {
+            elementDiv.append(addExpression({type: 'element', element: {type: elementType}}));
+        } else {
+            $('#div_scenarioElement .span_noScenarioElement').remove();
+            elementDiv.append(addElement({type: elementType}));
+        }
+        setEditor();
+        setAutocomplete();
+        updateSortable();
+        setInputExpressionsEvent();
+        setUndoStack();
+    })
+
     // Bloc else button
     pageContainer.off('click', '.bt_addSinon').on('click', '.bt_addSinon', function (event) {
         if ($(this).children("i").hasClass('fa-chevron-right')) {
@@ -1538,10 +1564,7 @@ function getThenSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '       <button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '         <i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '       </button>';
-    htmlData += '       <ul class="dropdown-menu">';
-    htmlData += '         <li><a class="bt_addScenarioElement fromSubElement tootlips" title="{{Permet d\'ajouter des éléments fonctionnels essentiels pour créer vos scénarios (Ex: SI/ALORS….)}}">{{Bloc}}</a></li>';
-    htmlData += '         <li><a class="bt_addAction">{{Action}}</a></li>';
-    htmlData += '       </ul>';
+    htmlData += getAddButton();
     htmlData += '     </div>';
     htmlData += '   </div>';
     htmlData += '  <div class="expressions scenario-si-bloc" style="background-color: ' + listColor[elementColorIndex] + ';">';
@@ -1567,10 +1590,7 @@ function getElseSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '<button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '<i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '</button>';
-    htmlData += '<ul class="dropdown-menu">';
-    htmlData += '<li><a class="bt_addScenarioElement fromSubElement tootlips" title="{{Permet d\'ajouter des éléments fonctionnels essentiels pour créer vos scénarios (ex. : SI/ALORS….)}}">{{Bloc}}</a></li>';
-    htmlData += '<li><a class="bt_addAction">{{Action}}</a></li>';
-    htmlData += '</ul>';
+    htmlData += getAddButton();
     htmlData += '</div>';
     htmlData += '</div>';
     htmlData += '<div class="expressions scenario-si-bloc" style="background-color: ' + listColor[elementColorIndex] + '; border-top :1px solid ' + listColorStrong[elementColorIndex] + '">';
@@ -1676,10 +1696,7 @@ function getDoSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '<button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '<i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '</button>';
-    htmlData += '<ul class="dropdown-menu">';
-    htmlData += '<li><a class="bt_addScenarioElement fromSubElement tootlips" title="{{Permet d\'ajouter des éléments fonctionnels essentiels pour créer vos scénarios (ex. : SI/ALORS….)}}">{{Bloc}}</a></li>';
-    htmlData += '<li><a class="bt_addAction">{{Action}}</a></li>';
-    htmlData += '</ul>';
+    htmlData += getAddButton();
     htmlData += '</div>';
     htmlData += '</div>';
     htmlData += '<div class="expressions scenario-condition" style="background-color: ' + listColor[elementColorIndex] + ';">';
@@ -1757,10 +1774,7 @@ function getActionSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '<button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '<i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '</button>';
-    htmlData += '<ul class="dropdown-menu">';
-    htmlData += '<li><a class="bt_addScenarioElement fromSubElement tootlips" title="{{Permet d\'ajouter des éléments fonctionnels essentiels pour créer vos scénarios (Ex: SI/ALORS….)}}">{{Bloc}}</a></li>';
-    htmlData += '<li><a class="bt_addAction">{{Action}}</a></li>';
-    htmlData += '</ul>';
+    htmlData += getAddButton();
     htmlData += '</div>';
     htmlData += '</div>';
     htmlData += '<div class="expressions scenario-si-bloc" style="display:table-cell; background-color: ' + listColor[elementColorIndex] + ';">';
@@ -1833,6 +1847,26 @@ function addSubElement(subElementToAdd, elementColorIndex) {
     }
     subElementHTML += '</div>';
     return subElementHTML;
+}
+
+/**
+ * Add link on add dropdown menu
+ *
+ * @returns {string}
+ */
+function getAddButton() {
+    var htmlData = '';
+    htmlData += '<ul class="dropdown-menu">';
+    htmlData += '<li><a class="bt_addAction">{{Action}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="if">{{Bloc Si/Alors/Sinon}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="action">{{Bloc Action}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="for">{{Bloc Boucle}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="in">{{Bloc Dans}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="at">{{Bloc A}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="code">{{Bloc Code}}</a></li>';
+    htmlData += '<li><a class="fromSubElement" data-type="comment">{{Bloc Commentaire}}</a></li>';
+    htmlData += '</ul>';
+    return htmlData;
 }
 
 /**
