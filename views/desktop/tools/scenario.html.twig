@@ -156,14 +156,23 @@
         <div class="action-bar" id="programActionBar" style="display:none;">
             <div class="action-group">
                 <a class="btn btn-success btn-action-bar bt_addScenarioElement"><i class="fas fa-plus-circle"></i>{{ 'scenario.add-block'|trans }}</a>
-                <a class="btn btn-default btn-action-bar" id="bt_undo"><i class="fas fa-undo-alt no-spacing"></i></a>
-                <a class="btn btn-action btn-action-bar" id="bt_redo"><i class="fas fa-redo-alt no-spacing"></i></a>
+                <a class="btn btn-default btn-action-bar" id="bt_undo" title='{{ 'Annuler' }}'><i class="fas fa-undo-alt no-spacing"></i><span class="spacing-left" style="display:none">0</span></a>
+                <a class="btn btn-action btn-action-bar" id="bt_redo" title='{{ 'Reproduire' }}'><i class="fas fa-redo-alt no-spacing"></i><span class="spacing-left" style="display:none">0</span></a>
+                <a class="btn btn-success btn-action-bar" id="bt_memoSet" title='{{ 'Initialiser la mémoire avec le contenu actuel' }}'><i class="fas fa-sd-card"></i><i class="fas fa-plus-circle no-spacing"></i></a>
+                <a class="btn btn-primary btn-action-bar" id="bt_memoRecall" title='{{ 'Rapeller le contenu de la mémoire' }}'><i class="fas fa-sd-card"></i><i class="fas fa-undo-alt no-spacing"></i></a>
+                <a class="btn btn-warning btn-action-bar" id="bt_memoReset" title='{{ 'Annuler la mémoire et revenir au dernier stack' }}'><i class="fas fa-sd-card"></i><i class="fas fa-bomb no-spacing"></i></a>
             </div>
             <div class="action-group">
-                <a class="btn btn-default btn-action-bar pull-right" id="bt_pasteAction" title='{{ 'CTRL = Remplacer' }}'><i class="fas fa-paste"></i>{{ 'scenario.paste-action'|trans }}</a>
-                <a class="btn btn-action btn-action-bar pull-right" id="bt_copyAction" title='{{ 'CTRL = Couper' }}'><i class="fas fa-copy"></i>{{ 'scenario.copy-action'|trans }}</a>
-                <a class="btn btn-default btn-action-bar pull-right" id="bt_pasteBloc" title='{{ 'CTRL = Remplacer' }}'><i class="fas fa-paste"></i>{{ 'scenario.paste-block'|trans }}</a>
-                <a class="btn btn-action btn-action-bar pull-right" id="bt_copyBloc" title='{{ 'CTRL = Couper' }}'><i class="fas fa-copy"></i>{{ 'scenario.copy-block'|trans }}</a>
+                <a class="btn btn-action btn-action-bar pull-right" id="bt_replaceAction" title='{{ 'Remplacer une Action' }}'><i class="fas fa-sync-alt no-spacing"></i></a>
+                <a class="btn btn-action btn-action-bar pull-right" id="bt_pasteAction" title='{{ 'Coller une Action' }}'><i class="fas fa-paste no-spacing"></i></a>
+                <a class="btn btn-action btn-action-bar pull-right" id="bt_cutAction" title='{{ 'Couper une Action' }}'><i class="fas fa-cut no-spacing"></i></a>
+                <a class="btn btn-action btn-action-bar pull-right" id="bt_copyAction" title='{{ 'Copier une Action' }}'>{{ 'scenario.action'|trans }}<i class="fas fa-copy no-spacing spacing-left"></i></a>
+                <a class="btn btn-default btn-action-bar pull-right" id="bt_replaceBloc" title='{{ 'Remplacer un Bloc' }}'><i class="fas fa-sync-alt no-spacing"></i></a>
+                <a class="btn btn-default btn-action-bar pull-right" id="bt_pasteBloc" title='{{ 'Coller un Bloc' }}'><i class="fas fa-paste no-spacing"></i></a>
+                <a class="btn btn-default btn-action-bar pull-right" id="bt_cutBloc" title='{{ 'Couper un Bloc' }}'><i class="fas fa-cut no-spacing"></i></a>
+                <a class="btn btn-default btn-action-bar pull-right" id="bt_copyBloc" title='{{ 'Copier un Bloc' }}'>{{ 'scenario.block'|trans }}<i class="fas fa-copy no-spacing spacing-left"></i></a>
+                <a class="btn btn-primary btn-action-bar pull-right" id="bt_moveBlocDown" title='{{ 'Déplacer en dessous' }}'><i class="fas fa-arrow-down no-spacing"></i></a>
+                <a class="btn btn-primary btn-action-bar pull-right" id="bt_moveBlocUp" title='{{ 'Déplacer au dessus' }}'><i class="fas fa-arrow-up no-spacing"></i></a>
             </div>
         </div>
     </section>

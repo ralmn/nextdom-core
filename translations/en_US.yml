@@ -522,8 +522,10 @@ repo:
         url: "NextDom core URL"
         version: "NextDom core version"
 scenario:
+  action: Action
   add-block: Add block
   add-item: Add element
+  block: Bloc
   choose: To choose
   conditions: "Conditions"
   copy-block: Copy bloc
