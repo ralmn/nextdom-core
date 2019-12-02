@@ -42,12 +42,11 @@ var SC_CLIPBOARD = null;
 var BLOC_FOCUS = null;
 var ACTION_FOCUS = null;
 var BLOC_LAST_FOCUS = false;
+var BLOC_CHANGE_COLOR = true;
 var currentExpression = null;
 var undoStack = new Array();
-var undoState = -1;
-var undoFirstState = 0;
-var undoLimit = 12;
-var undoRedo = 0;
+var undoStackPosition = -1;
+var undoLimit = 15;
 
 /**
  * List of colors for scenario elements
@@ -59,67 +58,99 @@ var colorIndex = 0;
 
 /* Space before is normal */
 var autoCompleteCondition = [
-    " rand(MIN,MAX)",
-    " #heure#",
-    " #jour#",
-    " #mois#",
-    " #annee#",
-    " #date#",
-    " #time#",
-    " #timestamp#",
-    " #semaine#",
-    " #sjour#",
-    " #minute#",
-    " #IP#",
-    " #hostname#",
-    " variable(mavariable,defaut)",
-    " delete_variable(mavariable)",
-    " tendance(commande,periode)",
-    " average(commande,periode)",
-    " max(commande,periode)",
-    " min(commande,periode)",
-    " round(valeur)",
-    " trigger(commande)",
-    " randomColor(debut,fin)",
-    " lastScenarioExecution(scenario)",
-    " stateDuration(commande)",
-    " lastChangeStateDuration(commande,value)",
-    " median(commande1,commande2)",
-    " time(value)",
-    " collectDate(cmd)",
-    " valueDate(cmd)",
-    " eqEnable(equipement)",
-    " name(type,commande)",
-    " value(commande)",
-    " lastCommunication(equipment)"
+    { value : '#IP#', label : ' #IP# : IP interne de NextDom' },
+    { value : '#hostname#', label : ' #hostname# : Nom de la machine NextDom' },
+    { value : '#date#', label : ' #date# : Jour et mois. Attention, le premier nombre est le mois. (ex : 1215 pour le 15 décembre)' },
+    { value : '#seconde#', label : ' #seconde# : Seconde courante (sans les zéros initiaux, ex : 6 pour 08:07:06)' },
+    { value : '#minute#', label : ' #minute# : Minute courante (sans les zéros initiaux, ex : 7 pour 08:07:06)' },
+    { value : '#heure#', label : ' #heure# : Heure courante au format 24h (sans les zéros initiaux, ex : 8 pour 08:07:06 ou 17 pour 17:15)' },
+    { value : '#heure12#', label : '#heure12# : Heure courante au format 12h (sans les zéros initiaux, ex : 8 pour 08:07:06)' },
+    { value : '#jour#', label : ' #jour# : Jour courant (sans les zéros initiaux, ex : 6 pour 06/07/2017)' },
+    { value : '#njour#', label : ' #njour# : Numéro du jour de 0 (dimanche) à 6 (samedi)' },
+    { value : '#sjour#', label : ' #sjour# : Nom du jour de la semaine (ex : Samedi)' },
+    { value : '#semaine#', label : ' #semaine# : Numéro de la semaine (ex : 51)' },
+    { value : '#mois#', label : ' #mois# : Mois courant (sans les zéros initiaux, ex : 7 pour 06/07/2017)' },
+    { value : '#smois#', label : ' #smois# : Nom du mois (ex : Janvier)' },
+    { value : '#annee#', label : ' #annee# : Année courante' },
+    { value : '#time#', label : ' #time# : Heure et minute courante (ex : 1715 pour 17h15)' },
+    { value : '#timestamp#', label : ' #timestamp# : Nombre de secondes depuis le 1er janvier 1970' },
+    { value : '#profil#', label : ' #profil# : profil de l\'utilisateur ayant déclenché le scénario (peut être vide)' },
+    { value : '#query#', label : ' #query# : interaction ayant déclenché le scénario' },
+    { value : '#trigger#', label : ' #trigger# : Peut être le nom de la commande qui a déclenché le scénario, (api) si le lancement a été déclenché par l\'API, (schedule) si il a été lancé par une programmation, (user) si il a été lancé manuellement' },
+    { value : 'average(commande,periode)', label : ' average(commande,periode) : Donnent la moyenne de la commande sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'averageBetween(commande,start,end)', label : ' averageBetween(commande,start,end) : Donnent la moyenne entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'avg(commande1,commande2,commandeN)', label : ' avg(commande1,commande2,commandeN) : Renvoie la moyenne des valeurs' },
+    { value : 'collectDate(cmd,[format])', label : ' collectDate(cmd,[format]) : Renvoie la date de la dernière donnée pour la commande donnée en paramètre, le 2ème paramètre optionnel permet de spécifier le format de retour (détails ici). Un retour de -1 signifie que la commande est introuvable et -2 que la commande n\'est pas de type info' },
+    { value : 'color_gradient(couleur_debut,couleur_fin,valuer_min,valeur_max,valeur)', label : ' color_gradient(couleur_debut,couleur_fin,valuer_min,valeur_max,valeur) : Renvoi une couleur calculé par rapport à valeur dans l\'intervalle couleur_debut/couleur_fin. La valeur doit etre comprise entre valeur_min et valeur_max' },
+    { value : 'convertDuration(secondes)', label : ' convertDuration(secondes) : Permet de convertir des secondes en j/h/mn/s' },
+    { value : 'duration(commande, valeur, période)', label : ' duration(commande, valeur, période) : Donnent la durée en minutes pendant laquelle l\'équipement avait la valeur choisie sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'durationbetween(commande,valeur,start,end)', label : ' durationbetween(commande,valeur,start,end) : Donnent la durée en minutes entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'eqEnable(equipement)', label : ' eqEnable(equipement) : Renvoie l\'état de l\'équipement. -2 si l\'équipement est introuvable, 1 si l\'équipement est actif et 0 s\'il est inactif' },
+    { value : 'floor(time/60)', label : ' floor(time/60) : Permet de convertir des secondes en minutes, ou des minutes en heures (floor(time/3600) pour des secondes en heures)' },
+    { value : 'formatTime(time)', label : ' formatTime(time) : Permet de formater le retour d\'une chaine #time#' },
+    { value : 'lastBetween(commande,start,end)', label : ' lastBetween(commande,start,end) : Donne la dernière valeur enregistrée pour l\'équipement entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'lastChangeStateDuration(commande,value)', label : ' lastChangeStateDuration(commande,value) : Donne la durée en secondes depuis le dernier changement d\'état à la valeur passée en paramètre. Retourne -1 si aucun historique n\'existe ou si la valeur n\'existe pas dans l\'historique. Retourne -2 si la commande n\'est pas historisée' },
+    { value : 'lastCommunication(equipment,[format])', label : ' lastCommunication(equipment,[format]) : Renvoie la date de la dernière communication pour l\'équipement donnée en paramètre, le 2ème paramètre optionnel permet de spécifier le format de retour (détails ici). Un retour de -1 signifie que l\'équipment est introuvable' },
+    { value : 'lastScenarioExecution(scenario)', label : ' lastScenarioExecution(scenario) : Donne la durée en secondes depuis le dernier lancement du scénario, renvoi 0 si le scénario n\'existe pas' },
+    { value : 'lastStateDuration(commande,value)', label : ' lastStateDuration(commande,value) : Donne la durée en secondes pendant laquelle l\'équipement a dernièrement eu la valeur choisie. Retourne -1 si aucun historique n\'existe ou si la valeur n\'existe pas dans l\'historique. Retourne -2 si la commande n\'est pas historisée' },
+    { value : 'min(commande,periode)', label : ' min(commande,periode) : Donnent le minimum de la commande sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'minBetween(commande,start,end)', label : ' minBetween(commande,start,end) : Donnent le minimum de la commande entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'median(commande1,commande2,commandeN)', label : ' median(commande1,commande2,commandeN) : Renvoie la médiane des valeurs' },
+    { value : 'max(commande,periode)', label : ' max(commande,periode) : Donnent le maximum de la commande sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'maxBetween(commande,start,end)', label : ' maxBetween(commande,start,end) : Donnent le maximum de la commande entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'name(type,commande)', label : ' name(type,commande) : Permet de récuperer le nom de la commande, de l\'équipement ou de l\'objet. Type vaut soit cmd, eqLogic ou object' },
+    { value : 'odd(valeur)', label : ' odd(valeur) : Permet de savoir si un nombre est impair ou non. Renvoie 1 si impair 0 sinon' },
+    { value : 'rand(MIN,MAX)', label : ' rand(MIN,MAX) : Donne un nombre aléatoire de MIN à MAX' },
+    { value : 'randText(texte1;texte2;texteN)', label : ' randText(texte1;texte2;texteN) : Permet de retourner un des textes aléatoirement (séparer les texte par un ; ). Il n\'y a pas de limite dans le nombre de texte' },
+    { value : 'randomColor(min,max)', label : ' randomColor(min,max) : Donne une couleur aléatoire compris entre 2 bornes ( 0 => rouge, 50 => vert, 100 => bleu)' },
+    { value : 'round(valeur,[decimal])', label : ' round(valeur,[decimal]) : Donne un arrondi au-dessus, [decimal] nombre de décimales après la virgule' },
+    { value : 'scenario(scenario)', label : ' scenario(scenario) : Renvoie le statut du scénario. 1 en cours, 0 si arrêté et -1 si désactivé, -2 si le scénario n\'existe pas et -3 si l\'état n\'est pas cohérent. Pour avoir le nom "humain" du scénario, vous pouvez utiliser le bouton dédié à droite de la recherche de scénario' },
+    { value : 'stateChanges(commande,valeur,période)', label : ' stateChanges(commande,valeur,période) : Donnent le nombre de changements d\'état (vers une certaine valeur si indiquée, ou au total sinon) sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'stateChangesBetween(commande,valeur,start,end)', label : ' stateChangesBetween(commande,valeur,start,end) : Donnent le nombre de changements d\'état (vers une certaine valeur si indiquée, ou au total sinon) entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'stateDuration(commande)', label : ' stateDuration(commande) : Donne la durée en secondes depuis le dernier changement de valeur. Retourne -1 si aucun historique n\'existe ou si la valeur n\'existe pas dans l\'historique. Retourne -2 si la commande n\'est pas historisée' },
+    { value : 'statistics(commande,calcul,période)', label : ' statistics(commande,calcul,période) : Donnent le résultat de différents calculs statistiques (sum, count, std, variance, avg, min, max) sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'statisticsBetween(commande,calcul,start,end)', label : ' statisticsBetween(commande,calcul,start,end) : Donnent le résultat de différents calculs statistiques (sum, count, std, variance, avg, min, max) entre les 2 bornes demandées (sous la forme Y-m-d H:i:s ou expression PHP)' },
+    { value : 'tag(montag,[defaut])', label : ' tag(montag,[defaut]) : Permet de récupérer la valeur d\'un tag ou la valeur par défaut si il n\'existe pas' },
+    { value : 'tendance(commande,periode)', label : ' tendance(commande,periode) : Donne la tendance de la commande sur la période (period=[month,day,hour,min] ou expression PHP)' },
+    { value : 'time_between(time,start,end)', label : ' time_between(time,start,end) : Permet de tester si un temps est entre deux valeurs avec time=temps (ex : 1530), start=temps, end=temps. Les valeurs start et end peuvent être à cheval sur minuit' },
+    { value : 'time_diff(date1,date1[,format])', label : ' time_diff(date1,date1[,format]) : Permet de connaître la différence entre 2 dates (les dates doivent être au format AAAA/MM/JJ HH:MM:SS). Par défaut (si vous ne mettez rien pour format), la méthode retourne le nombre total de jours. Vous pouvez lui demander en secondes (s), minutes (m), heures (h). Exemple en secondes time_diff(2018-02-02 14:55:00,2018-02-25 14:55:00,s)' },
+    { value : 'time_op(time,value)', label : ' time_op(time,value) : Permet de faire des opérations sur le temps, avec time=temps (ex : 1530) et value=valeur à ajouter ou à soustraire en minutes' },
+    { value : 'trigger(commande)', label : ' trigger(commande) : Permet de connaître le déclencheur du scénario ou de savoir si c\'est bien la commande passée en paramètre qui a déclenché le scénario' },
+    { value : 'triggerValue(commande)', label : ' triggerValue(commande) : Permet de connaître la valeur du déclencheur du scénario' },
+    { value : 'variable(mavariable,defaut)', label : ' variable(mavariable,defaut) : Récupère la valeur d\'une variable ou de la valeur souhaitée par défaut' },
+    { value : 'value(commande)', label : ' value(commande) : Renvoie la valeur d\'une commande si elle n\'est pas donnée automatiquement par NextDom (cas lors du stockage du nom de la commande dans une variable)' },
+    { value : 'valueDate(cmd,[format])', label : ' valueDate(cmd,[format]) : Renvoie la date de la dernière donnée pour la commande donnée en paramètre, le 2ème paramètre optionnel permet de spécifier le format de retour (détails ici). Un retour de -1 signifie que la commande est introuvable et -2 que la commande n\'est pas de type info' }
 ];
 autoCompleteAction = [
-    "tag",
-    "report",
-    "sleep",
-    "variable",
-    "delete_variable",
-    "scenario",
-    "stop",
-    "wait",
-    "gotodesign",
-    "log",
-    "message",
-    "equipement",
-    "ask",
-    "nextdom_poweroff",
-    "scenario_return",
-    "alert",
-    "popup",
-    "icon",
-    "event",
-    "remove_inat"
+  { value : 'alert', label : ' alert : Permet d\'afficher un petit message d\'alerte sur tous les navigateurs qui ont une page NextDom d\'ouvert. Vous pouvez en plus choisir 4 niveaux d\'alerte' },
+  { value : 'ask', label : ' ask : Action qui permet à NextDom de faire une demande puis de stocker la réponse dans une variable. Cette action est bloquante et ne finit que si NextDom reçoit une réponse ou si le timeout est atteint. Pour le moment cette action n\'est compatible qu\'avec les plugins SMS, Slack, SARAH et Telegram.' },
+  { value : 'delete_variable', label : ' delete_variable : Supprimer une variable' },
+  { value : 'equipement', label : ' equipement : Permet de modifier les proriétés visible/invisible actif/inactif d\'un équipement' },
+  { value : 'event', label : ' event : Permet de pousser une valeur dans une commande de type information de maniere arbitraire' },
+  { value : 'gotodesign', label : ' gotodesign : Sur tous les navigateurs qui affichent un design, le remplace par celui demandé' },
+  { value : 'icon', label : ' icon : Permet d\'affecter une icône au scénario' },
+  { value : 'log', label : ' log : Permet de rajouter un message dans les logs' },
+  { value : 'message', label : ' message : Permet d\'ajouter une message dans le centre de message' },
+  { value : 'nextdom_poweroff', label : ' nextdom_poweroff : Envoi l\'ordre à NextDom de s\'éteindre' },
+  { value : 'nextdom_reboot', label : ' nextdom_reboot : Envoi l\'ordre à NextDom de redémarrer' },
+  { value : 'popup', label : ' popup : Permet d\'afficher un popup qui doit absolument être validé sur tous les navigateurs qui ont une page NextDom ouverte.' },
+  { value : 'remove_inat', label : ' remove_inat : Permet de supprimer la programmation de tous les blocs DANS et A du scénario' },
+  { value : 'report', label : ' report : Permet d\'envoyer, par une commande message, un rapport d\'une vue, d\'un design ou d\'un panel en PNG/PDF/JPEG/SVG.' },
+  { value : 'scenario', label : ' scenario : Permet le contrôle des scénarios' },
+  { value : 'scenario_return', label : ' scenario_return : Retourne un texte ou une valeur pour une interaction par exemple' },
+  { value : 'sleep', label : ' sleep : Pause de x seconde(s)' },
+  { value : 'stop', label : ' stop : Arrête le scénario' },
+  { value : 'tag', label : ' tag : Permet d\'ajouter/modifier un tag (le tag n\'existe que pendant l\'execution en cours du scénario à la difference des variables qui survive à la fin du scénario' },
+  { value : 'variable', label : ' variable : Création/modification d\'une variable ou de la valeur d\'une variable' },
+  { value : 'wait', label : ' wait : Attend jusqu\'à ce que la condition soit valide (maximum 2h)' }
 ];
 
 /* Containers variables */
 var pageContainer = $('#div_pageContainer');
 var modalContainer = $('#md_modal');
 var scenarioContainer = $('#div_scenarioElement');
+var undoBtnSpan = $('#bt_undo').find('span');
+var redoBtnSpan = $('#bt_redo').find('span');
 
 // Page init
 loadInformations();
@@ -205,25 +236,31 @@ function initListEvents() {
  */
 function initGeneralFormEvents() {
     // Param changed : page leaving lock by msgbox
-    pageContainer.on('change', '.scenarioAttr', function () {
+    pageContainer.off('change', '.scenarioAttr').on('change', '.scenarioAttr', function () {
         if (!lockModify) {
             modifyWithoutSave = true;
             $(".bt_cancelModifs").show();
         }
     });
-    pageContainer.on('change', '.expressionAttr', function () {
+    pageContainer.off('change', '.expressionAttr').on('change', '.expressionAttr', function () {
         if (!lockModify) {
             modifyWithoutSave = true;
             $(".bt_cancelModifs").show();
         }
     });
-    pageContainer.on('change', '.elementAttr', function () {
+    pageContainer.off('change', '.elementAttr').on('change', '.elementAttr', function () {
         if (!lockModify) {
             modifyWithoutSave = true;
             $(".bt_cancelModifs").show();
         }
     });
-    pageContainer.on('change', '.subElementAttr', function () {
+    pageContainer.off('change', '.subElementAttr').on('change', '.subElementAttr', function () {
+        if (!lockModify) {
+            modifyWithoutSave = true;
+            $(".bt_cancelModifs").show();
+        }
+    });
+    $("#div_scenarioElement").off('change').on('change', function () {
         if (!lockModify) {
             modifyWithoutSave = true;
             $(".bt_cancelModifs").show();
@@ -231,19 +268,19 @@ function initGeneralFormEvents() {
     });
 
     // Cancel modifications
-    $('.bt_cancelModifs').on('click', function () {
+    $('.bt_cancelModifs').off('click').on('click', function () {
         loadFromUrl();
     });
 
     // Choose icon in scenario form
-    $('#bt_chooseIcon').on('click', function () {
+    $('#bt_chooseIcon').off('click').on('click', function () {
         chooseIcon(function (_icon) {
             $('.scenarioAttr[data-l1key=display][data-l2key=icon]').empty().append(_icon);
         });
     });
 
     // Reset timeout
-    $('#bt_resetTimeout').on('click', function () {
+    $('#bt_resetTimeout').off('click').on('click', function () {
         $(this).siblings(".slider").value(0);
     });
 
@@ -275,7 +312,7 @@ function initGeneralFormEvents() {
     });
 
     // Scenario panel collasping
-    $('#bt_scenarioCollapse').on('click',function(){
+    $('#bt_scenarioCollapse').off('click').on('click',function(){
        $('#accordionScenario .panel-collapse').each(function () {
           if (!$(this).hasClass("in")) {
               $(this).css({'height' : '' });
@@ -287,7 +324,7 @@ function initGeneralFormEvents() {
     });
 
     // Scenario panel uncollasping
-    $('#bt_scenarioUncollapse').on('click',function(){
+    $('#bt_scenarioUncollapse').off('click').on('click',function(){
        $('#accordionScenario .panel-collapse').each(function () {
           if ($(this).hasClass("in")) {
               $(this).removeClass("in");
@@ -337,7 +374,7 @@ function initGeneralFormEvents() {
     });
 
     // Programmation tab click
-    $('#bt_scenarioTab').on('click', function () {
+    $('#bt_scenarioTab').off('click').on('click', function () {
         setTimeout(function () {
             setEditor();
             taAutosize();
@@ -412,16 +449,6 @@ function initGeneralFormEvents() {
  * Init events on the scenario editor
  */
 function initScenarioEditorEvents() {
-    // Programmation tab click
-    $('.scenarioEditTab').on("shown.bs.tab", function () {
-        $("#programActionBar").hide();
-        setHeaderPosition(false);
-    });
-    $('.scenarioProgramTab').on("shown.bs.tab", function () {
-        $("#programActionBar").show();
-        setHeaderPosition(false);
-    });
-
     // Bloc add button
     pageContainer.off('click', '.bt_addScenarioElement').on('click', '.bt_addScenarioElement', function (event) {
         var elementDiv = $(this).closest('.element');
@@ -437,7 +464,8 @@ function initScenarioEditorEvents() {
 
         // Bloc add validation button
         $("#bt_addElementSave").off('click').on('click', function (event) {
-            setUndoStack();
+            $('#md_addElement').modal('hide');
+            clearRedoStack();
             if (expression) {
                 elementDiv.append(addExpression({type: 'element', element: {type: $("#in_addElementType").value()}}));
             } else {
@@ -445,28 +473,31 @@ function initScenarioEditorEvents() {
                 elementDiv.append(addElement({type: $("#in_addElementType").value()}));
             }
             setEditor();
+            setAutocomplete();
             updateSortable();
             setInputExpressionsEvent();
-            $('#md_addElement').modal('hide');
+            setUndoStack();
         });
     });
 
     // Bloc remove button
     pageContainer.off('click', '.bt_removeElement').on('click', '.bt_removeElement', function (event) {
-        setUndoStack();
+        clearRedoStack();
         if ($(this).closest('.expression').length !== 0) {
             $(this).closest('.expression').remove();
         } else {
             $(this).closest('.element').remove();
         }
+        setUndoStack();
     });
 
     // Bloc action add button
     pageContainer.off('click', '.bt_addAction').on('click', '.bt_addAction', function (event) {
-        setUndoStack();
+        clearRedoStack();
         $(this).closest('.subElement').children('.expressions').append(addExpression({type: 'action'}));
         setAutocomplete();
         updateSortable();
+        setUndoStack();
     });
 
     // Bloc else button
@@ -488,9 +519,10 @@ function initScenarioEditorEvents() {
 
     // Bloc action expression clear
     pageContainer.off('click', '.bt_removeExpression').on('click', '.bt_removeExpression', function () {
-        setUndoStack();
+        clearRedoStack();
         $(this).closest('.expression').remove();
         updateSortable();
+        setUndoStack();
     });
 
     // Bloc action expression cmd choose button
@@ -502,11 +534,12 @@ function initScenarioEditorEvents() {
     pageContainer.off('click', '.bt_selectOtherActionExpression').on('click', '.bt_selectOtherActionExpression', function (event) {
         var expression = $(this).closest('.expression');
         nextdom.getSelectActionModal({scenario: true}, function (result) {
-            setUndoStack();
             expression.find('.expressionAttr[data-l1key=expression]').value(result.human);
             nextdom.cmd.displayActionOption(expression.find('.expressionAttr[data-l1key=expression]').value(), '', function (html) {
+                clearRedoStack();
                 expression.find('.expressionOptions').html(html);
                 taAutosize();
+                setUndoStack();
             });
         });
     });
@@ -551,8 +584,21 @@ function initScenarioEditorEvents() {
         }
     });
 
+    // Bloc condition scenario choose button
+    pageContainer.off('click','.bt_selectScenarioExpression').on('click','.bt_selectScenarioExpression',  function (event) {
+        var expression = $(this).closest('.expression');
+        nextdom.scenario.getSelectModal({}, function (result) {
+            if (expression.find('.expressionAttr[data-l1key=type]').value() == 'action') {
+                expression.find('.expressionAttr[data-l1key=expression]').value(result.human);
+            }
+            if (expression.find('.expressionAttr[data-l1key=type]').value() == 'condition') {
+                expression.find('.expressionAttr[data-l1key=expression]').atCaret('insert', result.human);
+            }
+        });
+    });
+
     // Bloc action repetition button
-    pageContainer.on('click', '.subElementAttr[data-l1key=options][data-l2key=allowRepeatCondition]', function () {
+    pageContainer.off('click', '.subElementAttr[data-l1key=options][data-l2key=allowRepeatCondition]').on('click', '.subElementAttr[data-l1key=options][data-l2key=allowRepeatCondition]', function () {
         if (parseInt($(this).attr('value')) === 0) {
             $(this).attr('value', 1);
             $(this).html('<i class="fas fa-ban text-danger"></i>');
@@ -574,6 +620,7 @@ function initScenarioEditorEvents() {
             tolerance: "intersect",
             grid: [30, 15],
             update: function (event, ui) {
+                clearRedoStack();
                 if (ui.item.findAtDepth('.element', 2).length === 1 && ui.item.parent().attr('id') === 'div_scenarioElement') {
                     ui.item.replaceWith(ui.item.findAtDepth('.element', 2));
                 }
@@ -590,6 +637,7 @@ function initScenarioEditorEvents() {
                     scenarioContainer.sortable("cancel");
                 }
                 updateSortable();
+                setUndoStack();
             },
             start: function (event, ui) {
                 if (expressions.find('.sortable').length < 3) {
@@ -601,28 +649,39 @@ function initScenarioEditorEvents() {
     });
 
     // Bloc dropping
-    pageContainer.on('mousedown','.bt_sortable',  function () {
-        setUndoStack();
-    });
     pageContainer.off('mouseout', '.bt_sortable').on('mouseout', '.bt_sortable', function () {
         scenarioContainer.sortable("disable");
     });
 
-    // Unod button
-    $('#bt_undo').on('click', function (event) {
+    // Undo button
+    $('#bt_undo').off('click').on('click', function (event) {
         undo();
         BLOC_LAST_FOCUS = null;
     });
 
-    // Unod button
-    $('#bt_redo').on('click', function (event) {
+    // Redo button
+    $('#bt_redo').off('click').on('click', function (event) {
         redo();
         BLOC_LAST_FOCUS = null;
     });
 
+    // Set memory button
+    $('#bt_memoSet').off('click').on('click', function (event) {
+        setMemoryStack();
+    });
+
+    // Reset memory button
+    $('#bt_memoReset').off('click').on('click', function (event) {
+        resetMemoryStack();
+    });
+
+    // Recall memory button
+    $('#bt_memoRecall').off('click').on('click', function (event) {
+        recallMemoryStack();
+    });
 
     // Bloc focusing
-    $('#div_scenarioElement').on('focus', ':input', function() {
+    scenarioContainer.off('focus', ':input').on('focus', ':input', function() {
         $('.element').removeClass("scenario-bloc-focused");
         $('.expression').removeClass("scenario-action-focused");
         BLOC_FOCUS = $(this).closest('.element');
@@ -636,7 +695,7 @@ function initScenarioEditorEvents() {
             BLOC_LAST_FOCUS = true;
         }
     })
-    $('#div_scenarioElement').on('click', '.scenario-title', function() {
+    scenarioContainer.off('click', '.scenario-title').on('click', '.scenario-title', function() {
         $('.element').removeClass("scenario-bloc-focused");
         BLOC_FOCUS = $(this).closest('.element');
         BLOC_FOCUS.addClass("scenario-bloc-focused");
@@ -646,122 +705,82 @@ function initScenarioEditorEvents() {
     })
 
     // Bloc copy / cut
-    $('#bt_copyBloc').on('click', function (event) {
-        if (BLOC_FOCUS) {
-            SC_CLIPBOARD = BLOC_FOCUS.clone();
-            // CTRL key = CUT
-            if (event.ctrlKey) {
-                setUndoStack();
-                BLOC_FOCUS.remove();
-            }
-        } else {
-            notify("Attention", "Aucun bloc selectionné !", 'warning');
-        }
+    $('#bt_copyBloc').off('click').on('click', function () {
+        blocCopy(BLOC_FOCUS);
+        BLOC_CHANGE_COLOR=true;
     });
-    $('#bt_copyAction').on('click', function (event) {
-        if (ACTION_FOCUS) {
-            SC_CLIPBOARD = ACTION_FOCUS.clone();
-            // CTRL key = CUT
-            if (event.ctrlKey) {
-                setUndoStack();
-                ACTION_FOCUS.remove();
-            }
-        } else {
-            notify("Attention", "Aucune action selectionnée !", 'warning');
-        }
+    $('#bt_cutBloc').off('click').on('click', function (event) {
+        blocCopy(BLOC_FOCUS,true);
+        BLOC_CHANGE_COLOR=false;
+    });
+
+    // Action copy / cut
+    $('#bt_copyAction').off('click').on('click', function (event) {
+        blocCopy(ACTION_FOCUS);
+        BLOC_CHANGE_COLOR=true;
+    });
+    $('#bt_cutAction').off('click').on('click', function (event) {
+        blocCopy(ACTION_FOCUS,true);
+        BLOC_CHANGE_COLOR=false;
     });
 
     // Bloc paste / replace
-    $('#bt_pasteBloc').on('click', function (event) {
-        if (SC_CLIPBOARD && BLOC_FOCUS) {
-            var newColorIndex = getNextColorIndex();
-            setUndoStack();
-            newBloc = $(SC_CLIPBOARD).clone();
-            newBloc.find('input[data-l1key="id"]').attr("value", "");
-            newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
-            newBloc.find('input[data-l1key="scenarioSubElement_id"]').attr("value", "");
-            if (newBloc.hasClass('element')) {
-                newBloc.css('background-color',listColorStrong[newColorIndex]);
-                newBloc.find('.empty').parent().css('background-color',listColor[newColorIndex]);
-            } else {
-                newBloc.find('.element').css('background-color',listColorStrong[newColorIndex]);
-                newBloc.find('.element').find('.empty').parent().css('background-color',listColor[newColorIndex]);
-            }
+    $('#bt_pasteBloc').off('click').on('click', function (event) {
+        blocPaste();
+    });
+    $('#bt_replaceBloc').off('click').on('click', function (event) {
+        blocPaste(true);
+    });
+
+    // Action paste / replace
+    $('#bt_pasteAction').off('click').on('click', function (event) {
+        actionPaste();
+    });
+    $('#bt_replaceAction').off('click').on('click', function (event) {
+        actionPaste(true);
+    });
+
+    // Bloc/Action move down
+    $('#bt_moveBlocDown').off('click').on('click', function (event) {
+        BLOC_CHANGE_COLOR=false;
+        if (BLOC_FOCUS || ACTION_FOCUS) {
             if (BLOC_LAST_FOCUS) {
-                if (newBloc.hasClass('expression') || BLOC_FOCUS.parent().hasClass('element')) {
-                    newBloc.insertAfter(BLOC_FOCUS);
-                } else {
-                    newDiv = '<div class="expression scenario-group sortable col-xs-12">';
-                    newDiv += '<input class="expressionAttr" data-l1key="type" style="display : none;" value="element">';
-                    newDiv += '<div class="col-xs-12" style="padding-right: 0px; padding-left: 0px;" id="insertHere">';
-                    newDiv += '</div>';
-                    newDiv += '</div>';
-                    if (BLOC_FOCUS.parent().parent().hasClass('expression')) {
-                        $(newDiv).insertAfter(BLOC_FOCUS.parent().parent());
-                    } else {
-                        $(newDiv).insertAfter(BLOC_FOCUS);
-                    }
-                    newBloc.appendTo('#insertHere');
-                    $('#insertHere').removeAttr('id');
-                }
-                // CTRL = REPLACE
-                if (event.ctrlKey) {
-                    BLOC_FOCUS.remove();
+                if (BLOC_FOCUS.next().length!=0) {
+                    let BLOC_FOCUS_MEM = BLOC_FOCUS.next();
+                    blocCopy(BLOC_FOCUS,true,true);
+                    BLOC_FOCUS = BLOC_FOCUS_MEM;
+                    blocPaste(false,true,true);
                 }
             } else {
-                if (newBloc.hasClass('expression')) {
-                    newBloc.insertAfter(ACTION_FOCUS);
-                } else {
-                    newDiv = '<div class="expression scenario-group sortable col-xs-12">';
-                    newDiv += '<input class="expressionAttr" data-l1key="type" style="display : none;" value="element">';
-                    newDiv += '<div class="col-xs-12" style="padding-right: 0px; padding-left: 0px;" id="insertHere">';
-                    newDiv += '</div>';
-                    newDiv += '</div>';
-                    $(newDiv).insertAfter(ACTION_FOCUS);
-                    newBloc.appendTo('#insertHere');
-                    $('#insertHere').removeAttr('id');
-                }
-                // CTRL = REPLACE
-                if (event.ctrlKey) {
-                    ACTION_FOCUS.remove();
+                if (ACTION_FOCUS.next().length!=0) {
+                    let ACTION_FOCUS_MEM = ACTION_FOCUS.next();
+                    blocCopy(ACTION_FOCUS,true,true);
+                    ACTION_FOCUS = ACTION_FOCUS_MEM;
+                    actionPaste(false,true,true);
                 }
             }
-            $('.element').removeClass("scenario-bloc-focused");
-            $('.expression').removeClass("scenario-action-focused");
-            BLOC_FOCUS = null;
-            ACTION_FOCUS = null;
-            updateSortable();
-        } else {
-            notify("Attention", "Aucun bloc selectionné, ni copié !", 'warning');
         }
     });
-    $('#bt_pasteAction').on('click', function (event) {
-        if (SC_CLIPBOARD && (ACTION_FOCUS || BLOC_FOCUS)) {
-            setUndoStack();
-            newBloc = $(SC_CLIPBOARD).clone();
-            newBloc.find('input[data-l1key="id"]').attr("value", "");
-            newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
-            newBloc.find('input[data-l1key="scenarioSubElement_id"]').attr("value", "");
-            if (ACTION_FOCUS) {
-                newBloc.insertAfter(ACTION_FOCUS);
-                // CTRL = REPLACE
-                if (event.ctrlKey) {
-                    ACTION_FOCUS.remove();
+
+    // Bloc/Action move up
+    $('#bt_moveBlocUp').off('click').on('click', function (event) {
+        BLOC_CHANGE_COLOR=false;
+        if (BLOC_FOCUS || ACTION_FOCUS) {
+            if (BLOC_LAST_FOCUS) {
+                if (BLOC_FOCUS.prev(".empty").length==0 && BLOC_FOCUS.prev().length!=0) {
+                    let BLOC_FOCUS_MEM = BLOC_FOCUS.prev();
+                    blocCopy(BLOC_FOCUS,true,true);
+                    BLOC_FOCUS = BLOC_FOCUS_MEM;
+                    blocPaste(false,false,true);
                 }
             } else {
-                newBloc.insertAfter(BLOC_FOCUS.find(".empty").first());
-                // CTRL = REPLACE
-                if (event.ctrlKey) {
-                    BLOC_FOCUS.remove();
+                if (ACTION_FOCUS.prev(".empty").length==0) {
+                    let ACTION_FOCUS_MEM = ACTION_FOCUS.prev();
+                    blocCopy(ACTION_FOCUS,true,true);
+                    ACTION_FOCUS = ACTION_FOCUS_MEM;
+                    actionPaste(false,false,true);
                 }
             }
-            $('.element').removeClass("scenario-bloc-focused");
-            $('.expression').removeClass("scenario-action-focused");
-            BLOC_FOCUS = null;
-            ACTION_FOCUS = null;
-            updateSortable();
-        } else {
-            notify("Attention", "Aucun bloc ni action selectionné(e)s, ni copié(e)s !", 'warning');
         }
     });
 }
@@ -773,13 +792,7 @@ function loadScenario(scenarioId, tabToShow) {
     $('#scenarioThumbnailDisplay').hide();
     printScenario(scenarioId);
     urlUpdate(scenarioId);
-    $('.nav-tabs a[href="#' + tabToShow + '"]').tab('show');
-    if (tabToShow != PROGRAM_TAB) {
-        $("#programActionBar").hide();
-    } else {
-        $("#programActionBar").show();
-    }
-    setHeaderPosition(false);
+    updateUrlTab();
 }
 
 /**
@@ -837,9 +850,9 @@ function addScenario() {
                     modifyWithoutSave = false;
                     $('#scenarioThumbnailDisplay').hide();
                     $('#bt_scenarioThumbnailDisplay').hide();
-                    resetUndo();
                     printScenario(data.id);
                     urlUpdate(data.id);
+                    updateUrlTab();
                 }
             });
         }
@@ -951,19 +964,20 @@ function updateElseToggle() {
  */
 function setEditor() {
     $('.elementAttr[data-l1key=type][value=code]').each(function () {
-        var expression = $(this).closest('.element');
-        var code = expression.find('.expressionAttr[data-l1key=expression]');
-        if (code.attr('id') == undefined ) {
-            code.uniqueId();
-            var id = code.attr('id');
+        let editorTmp = $(this).closest('.element').find('.expressionAttr[data-l1key=expression]');
+        if (editorTmp.attr('id') == undefined ) {
+            editorTmp.uniqueId();
+            let currentId = editorTmp.attr('id');
             setTimeout(function () {
-                editor[id] = CodeMirror.fromTextArea(document.getElementById(id), {
+                editor[currentId] = CodeMirror.fromTextArea(document.getElementById(currentId), {
                     lineNumbers: true,
                     mode: 'text/x-php',
                     matchBrackets: true,
                     viewportMargin: Infinity
                 });
-            }, 100);
+            }, 1);
+        } else {
+            editor[editorTmp.attr('id')].refresh();
         }
     });
     setTimeout(function () {
@@ -980,7 +994,7 @@ function setEditor() {
  * @returns {*}
  */
 function splitAutocomplete(val) {
-    return val.split(/ \s*/);
+    return val.split(/\s*/);
 }
 
 /**
@@ -1007,16 +1021,21 @@ function setAutocomplete() {
                     "ui-autocomplete": "autocomplete"
                 },
                 autoFocus: true,
-                minLength: 0,
+                minLength: 1,
                 focus: function () {
                     return false;
                 },
                 select: function (event, ui) {
-                    var terms = splitAutocomplete(this.value);
-                    terms.pop();
-                    terms.push(ui.item.value.trim());
-                    terms.push("");
-                    this.value = terms.join(" ");
+                    let terms = this.value;
+                    if (terms == " ") {
+                        terms = ui.item.value.trim();
+                    } else {
+                        if (terms.substr(terms.length - 1) != " ") {
+                            terms = terms.substr(0,terms.length - 1) + " ";
+                        }
+                        terms = terms + ui.item.value;
+                    }
+                    this.value = terms;
                     return false;
                 }
             });
@@ -1028,7 +1047,10 @@ function setAutocomplete() {
                     "ui-autocomplete": "autocomplete"
                 },
                 autoFocus: true,
-                minLength: 0,
+                minLength: 1,
+                select: function (event, ui) {
+                    this.value = ui.item.value.trim();
+                },
                 close: function (event, ui) {
                     $(this).trigger('focusout');
                 }
@@ -1122,15 +1144,16 @@ function printScenario(scenarioId) {
                     for (var i in data) {
                         $('#' + data[i].id).append(data[i].html.html);
                     }
+                    $('#div_editScenario').show();
                     taAutosize();
-                    updateSortable();
-                    setInputExpressionsEvent();
                     setAutocomplete();
                     updateElseToggle();
-                    $('#div_editScenario').show();
                     setEditor();
-                    modifyWithoutSave = false;
+                    updateSortable();
+                    setInputExpressionsEvent();
                     resetUndo();
+                    setUndoStack();
+                    modifyWithoutSave = false;
                     $(".bt_cancelModifs").hide();
                 }
             });
@@ -1473,7 +1496,7 @@ function getThenSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '     </button>';
     htmlData += '     <span class="scenario-title">{{ALORS}}</span>';
     htmlData += '     <div class="dropdown cursor">';
-    htmlData += '       <button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
+    htmlData += '       <button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '         <i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '       </button>';
     htmlData += '       <ul class="dropdown-menu">';
@@ -1502,7 +1525,7 @@ function getElseSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '<div class="scenario-sinon">';
     htmlData += '<span class="scenario-title">{{SINON}}</span>';
     htmlData += '<div class="dropdown cursor">';
-    htmlData += '<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
+    htmlData += '<button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '<i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '</button>';
     htmlData += '<ul class="dropdown-menu">';
@@ -1611,7 +1634,7 @@ function getDoSubElementHTML(subElementData, elementColorIndex) {
     htmlData += '<div class="scenario-faire">';
     htmlData += '<span class="scenario-title">{{FAIRE}}</span>';
     htmlData += '<div class="dropdown cursor">';
-    htmlData += '<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
+    htmlData += '<button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '<i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '</button>';
     htmlData += '<ul class="dropdown-menu">';
@@ -1646,7 +1669,7 @@ function getCodeSubElementHTML(subElementData, elementColorIndex) {
     }
     htmlData += '<span class="scenario-title">{{CODE}}</span>';
     htmlData += '</div>';
-    htmlData += '<div class="expressions scenario-condition" style="background-color: ' + listColor[elementColorIndex] + ';">';
+    htmlData += '<div class="expressions" style="background-color: ' + listColor[elementColorIndex] + ';">';
     htmlData += addFirstExpressionHTML(subElementData, 'code');
     htmlData += '</div>';
     htmlData += '<div class="scenario-delete"><i class="fas fa-minus-circle pull-right cursor bt_removeElement"></i></div>';
@@ -1692,7 +1715,7 @@ function getActionSubElementHTML(subElementData, elementColorIndex) {
     }
     htmlData += '<span class="scenario-title">{{ACTION}}</span>';
     htmlData += '<div class="dropdown cursor">';
-    htmlData += '<button class="btn btn-xs btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
+    htmlData += '<button class="btn btn-sm btn-default dropdown-toggle" type="button" id="dropdownMenu1" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">';
     htmlData += '<i class="fas fa-plus-circle spacing-right"></i>{{Ajouter...}}';
     htmlData += '</button>';
     htmlData += '<ul class="dropdown-menu">';
@@ -2080,15 +2103,16 @@ function getBinaryExpressionHTML(humanResult) {
 function selectCmdExpression(elementData, expressionElement) {
     var type = 'info';
     if (expressionElement.find('.expressionAttr[data-l1key=type]').value() === 'action') {
-        setUndoStack();
         type = 'action';
     }
     nextdom.cmd.getSelectModal({cmd: {type: type}}, function (result) {
         if (expressionElement.find('.expressionAttr[data-l1key=type]').value() === 'action') {
             expressionElement.find('.expressionAttr[data-l1key=expression]').value(result.human);
             nextdom.cmd.displayActionOption(expressionElement.find('.expressionAttr[data-l1key=expression]').value(), '', function (html) {
+                clearRedoStack();
                 expressionElement.find('.expressionOptions').html(html);
                 taAutosize();
+                setUndoStack();
             });
         }
         if (expressionElement.find('.expressionAttr[data-l1key=type]').value() === 'condition') {
@@ -2121,7 +2145,7 @@ function selectCmdExpression(elementData, expressionElement) {
                         label: "Valider",
                         className: "btn-primary",
                         callback: function () {
-                            setUndoStack();
+                            clearRedoStack();
                             var condition = result.human;
                             var operatorValue = $('.conditionAttr[data-l1key=operator]').value();
                             var operandeValue = $('.conditionAttr[data-l1key=operande]').value();
@@ -2141,6 +2165,7 @@ function selectCmdExpression(elementData, expressionElement) {
                             if (nextValue !== '') {
                                 elementData.click();
                             }
+                            setUndoStack();
                         }
                     },
                 }
@@ -2156,59 +2181,75 @@ function loadFromUrl() {
     var scenarioIdFromUrl = getUrlVars('id');
     if (is_numeric(scenarioIdFromUrl)) {
         if ($('.scenarioDisplayCard[data-scenario_id=' + scenarioIdFromUrl + ']').length !== 0) {
-            var url = document.location.toString();
+            let url = document.location.toString();
             var tabCode = GENERAL_TAB;
             if (url.match('#')) {
                 tabCode = url.split('#')[1];
             }
-            $('.nav-tabs a').on('shown.bs.tab', function (e) {
-                window.location.hash = e.target.hash;
-                tab = e.target.hash;
-            });
             loadScenario(scenarioIdFromUrl, tabCode);
         }
     }
+
+}
+
+/**
+ * update URL and tab activation
+ */
+function updateUrlTab() {
+    let url = document.location.toString();
+    let tabCode = GENERAL_TAB;
+    if (url.match('#')) {
+        tabCode = url.split('#')[1];
+        $('.nav-tabs a[href="#' + tabCode + '"]').tab('show');
+    }
+    $('.nav-tabs a').off('shown.bs.tab').on('shown.bs.tab', function (e) {
+        window.location.hash = e.target.hash;
+        updateUrlTab();
+    });
+    if (tabCode != PROGRAM_TAB) {
+        $("#programActionBar").hide();
+    } else {
+        $("#programActionBar").show();
+    }
+    setHeaderPosition(false);
 }
 
 /**
  * Add undo state in stack
- *
- * @param state Données de la requête
  */
-function setUndoStack(state = 0) {
+function setUndoStack() {
     // Capture active state and push in stack
-    newStack = $('#div_scenarioElement').clone()
-    if (newStack != undoStack[state-1]) {
-        if (state == 0) {
-            state = undoState = undoStack.length
-            undoRedo = 0
-        }
-        undoStack[state] = newStack
-        // limit stack
-        if (state >= undoFirstState + undoLimit) {
-            undoFirstState += 1
-            undoStack[undoFirstState -1] = 0
-        }
+    let newStack = scenarioContainer.clone();
+    undoStackPosition += 1;
+    undoStack[undoStackPosition] = newStack;
+    if (undoStack.length-1 > undoLimit) {
+        undoStack = undoStack.slice(1, undoStackPosition + 1);
+        undoStackPosition -= 1;
     }
+    updateUndoBtn();
+}
+
+/**
+ * Clear the stack at the actual history position
+ */
+function clearRedoStack() {
+    undoStack = undoStack.slice(0, undoStackPosition + 1);
+    undoStackPosition -= 1;
+    setUndoStack();
 }
 
 /**
  * Undo state from stack
  */
 function undo() {
-    if (undoState >= undoFirstState) {
-        try {
-            var loadState = undoState;
-            if (undoRedo == 0) {
-                setUndoStack(undoState + 1);
-            }
-            loadStack = undoStack[loadState];
-            $('#div_scenarioElement').replaceWith(loadStack);
-            $('.dropdown.open').dropdown("toggle");
-            undoState -= 1;
-        } catch(error) {
-            notify("Erreur d'undo", error, 'error');
-        }
+    if (undoStackPosition > 0) {
+        undoStackPosition -= 1;
+        scenarioContainer.replaceWith(undoStack[undoStackPosition]);
+        scenarioContainer = $('#div_scenarioElement');
+        $('.element').removeClass("scenario-bloc-focused");
+        $('.expression').removeClass("scenario-action-focused");
+        updateUndoBtn();
+        initScenarioEditorEvents();
     } else {
         notify("Attention", "La pile d'undo est vide", 'warning');
     }
@@ -2218,17 +2259,14 @@ function undo() {
  * Redo state from stack
  */
 function redo() {
-    undoRedo = 1
-    if (undoState >= undoFirstState -1 && undoState +2 < undoStack.length) {
-        try {
-            var loadState = undoState + 2;
-            loadStack = undoStack[loadState];
-            $('#div_scenarioElement').replaceWith(loadStack);
-            $('.dropdown.open').dropdown("toggle");
-            undoState += 1;
-        } catch(error) {
-            notify("Erreur de redo", error, 'error');
-        }
+    if (undoStackPosition < undoStack.length-1) {
+        undoStackPosition += 1;
+        scenarioContainer.replaceWith(undoStack[undoStackPosition]);
+        scenarioContainer = $('#div_scenarioElement');
+        $('.element').removeClass("scenario-bloc-focused");
+        $('.expression').removeClass("scenario-action-focused");
+        updateUndoBtn();
+        initScenarioEditorEvents();
     } else {
         notify("Attention", "La pile de redo est vide", 'warning');
     }
@@ -2239,7 +2277,227 @@ function redo() {
  */
 function resetUndo() {
     undoStack = new Array();
-    undoState = -1;
-    undoFirstState = 0;
-    undoLimit = 10;
+    undoStackPosition = -1;
+    undoLimit = 15;
+    undoBtnSpan.hide();
+    redoBtnSpan.hide();
+}
+
+/**
+ * Set state in memory
+ */
+function setMemoryStack() {
+    let newStack = scenarioContainer.clone();
+    memoryStack = newStack;
+}
+
+/**
+ * Set state in memory
+ */
+function resetMemoryStack() {
+    if (undoStack.length > 0) {
+        undoStackPosition = undoStack.length-1;
+        scenarioContainer.replaceWith(undoStack[undoStackPosition]);
+        scenarioContainer = $('#div_scenarioElement');
+        $('.element').removeClass("scenario-bloc-focused");
+        $('.expression').removeClass("scenario-action-focused");
+        initScenarioEditorEvents();
+    }
+}
+
+/**
+ * Recall state from memory
+ */
+function recallMemoryStack() {
+    scenarioContainer.replaceWith(memoryStack);
+    scenarioContainer = $('#div_scenarioElement');
+    $('.element').removeClass("scenario-bloc-focused");
+    $('.expression').removeClass("scenario-action-focused");
+    initScenarioEditorEvents();
+}
+
+/**
+ * Update display of undo/redo buttons
+ */
+function updateUndoBtn() {
+    if (undoStackPosition > 0) {
+        undoBtnSpan.show().html(undoStackPosition);
+    } else {
+        undoBtnSpan.hide();
+    }
+    if (undoStackPosition < undoStack.length-1) {
+        redoBtnSpan.show().html(undoStack.length-1-undoStackPosition);
+    } else {
+        redoBtnSpan.hide();
+    }
+}
+
+/**
+ * Bloc/Action copy or cut
+ *
+ * @param blocType Type de bloc to copy/cut
+ * @param blocCut TRUE = bloc cut
+ * @param notStack TRUE = not save cut in stack
+ */
+function blocCopy(blocType,blocCut=false,notStack=false) {
+    if (blocType) {
+        SC_CLIPBOARD = blocType.clone();
+        // CTRL key = CUT
+        if (blocCut) {
+            if (!notStack) {
+                clearRedoStack();
+            }
+            blocType.remove();
+            if (!notStack) {
+                setUndoStack();
+            }
+        }
+    } else {
+        notify("Attention", "Aucune selection !", 'warning');
+    }
+}
+
+/**
+ * Bloc paste
+ *
+ * @param blocReplace TRUE = replace
+ * @param blocAfter TRUE = paste after focus bloc
+ * @param notClear TRUE = not clear stack
+ */
+ function blocPaste(blocReplace=false,blocAfter=true,notClear=false) {
+    if (SC_CLIPBOARD && BLOC_FOCUS) {
+        if (!notClear) {
+          clearRedoStack();
+        }
+        let newColorIndex = getNextColorIndex();
+        let newBloc = $(SC_CLIPBOARD).clone();
+        newBloc.find('input[data-l1key="id"]').attr("value", "");
+        newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
+        newBloc.find('input[data-l1key="scenarioSubElement_id"]').attr("value", "");
+        if (BLOC_CHANGE_COLOR) {
+            if (newBloc.hasClass('element')) {
+                newBloc.css('background-color',listColorStrong[newColorIndex]);
+                newBloc.find('.empty').parent().css('background-color',listColor[newColorIndex]);
+            } else {
+                newBloc.find('.element').css('background-color',listColorStrong[newColorIndex]);
+                newBloc.find('.element').find('.empty').parent().css('background-color',listColor[newColorIndex]);
+            }
+        }
+        if (BLOC_LAST_FOCUS) {
+            if (newBloc.hasClass('expression') || BLOC_FOCUS.parent().hasClass('element')) {
+                if (blocAfter) {
+                    newBloc.insertAfter(BLOC_FOCUS);
+                } else {
+                    newBloc.insertBefore(BLOC_FOCUS);
+                }
+            } else {
+                newDiv = '<div class="expression scenario-group sortable col-xs-12">';
+                newDiv += '<input class="expressionAttr" data-l1key="type" style="display : none;" value="element">';
+                newDiv += '<div class="col-xs-12" style="padding-right: 0px; padding-left: 0px;" id="insertHere">';
+                newDiv += '</div>';
+                newDiv += '</div>';
+                if (blocAfter) {
+                    if (BLOC_FOCUS.parent().parent().hasClass('expression')) {
+                        $(newDiv).insertAfter(BLOC_FOCUS.parent().parent());
+                    } else {
+                        $(newDiv).insertAfter(BLOC_FOCUS);
+                    }
+                } else {
+                    if (BLOC_FOCUS.parent().parent().hasClass('expression')) {
+                        $(newDiv).insertBefore(BLOC_FOCUS.parent().parent());
+                    } else {
+                        $(newDiv).insertBefore(BLOC_FOCUS);
+                    }
+                }
+                newBloc.appendTo('#insertHere');
+                $('#insertHere').removeAttr('id');
+            }
+            // CTRL = REPLACE
+            if (blocReplace) {
+                BLOC_FOCUS.remove();
+            }
+        } else {
+            if (newBloc.hasClass('expression')) {
+                if (blocAfter) {
+                    newBloc.insertAfter(ACTION_FOCUS);
+                } else {
+                    newBloc.insertBefore(ACTION_FOCUS);
+                }
+            } else {
+                let newDiv = '<div class="expression scenario-group sortable col-xs-12">';
+                newDiv += '<input class="expressionAttr" data-l1key="type" style="display : none;" value="element">';
+                newDiv += '<div class="col-xs-12" style="padding-right: 0px; padding-left: 0px;" id="insertHere">';
+                newDiv += '</div>';
+                newDiv += '</div>';
+                if (blocAfter) {
+                    $(newDiv).insertAfter(ACTION_FOCUS);
+                } else {
+                    $(newDiv).insertBefore(ACTION_FOCUS);
+                }
+
+                newBloc.appendTo('#insertHere');
+                $('#insertHere').removeAttr('id');
+            }
+            // CTRL = REPLACE
+            if (blocReplace) {
+                ACTION_FOCUS.remove();
+            }
+        }
+        $('.element').removeClass("scenario-bloc-focused");
+        $('.expression').removeClass("scenario-action-focused");
+        BLOC_FOCUS = null;
+        ACTION_FOCUS = null;
+        updateSortable();
+        setUndoStack();
+    } else {
+        notify("Attention", "Aucun bloc selectionné, ni copié !", 'warning');
+    }
+}
+
+/**
+ * Action paste
+ *
+ * @param actionReplace TRUE = replace
+ * @param actionAfter TRUE = paste after focus bloc
+ * @param notClear TRUE = not clear stack
+ */
+ function actionPaste(actionReplace=false,actionAfter=true,notClear=false) {
+    if (SC_CLIPBOARD && (ACTION_FOCUS || BLOC_FOCUS)) {
+        if (!notClear) {
+          clearRedoStack();
+        }
+        let newBloc = $(SC_CLIPBOARD).clone();
+        newBloc.find('input[data-l1key="id"]').attr("value", "");
+        newBloc.find('input[data-l1key="scenarioElement_id"]').attr("value", "");
+        newBloc.find('input[data-l1key="scenarioSubElement_id"]').attr("value", "");
+        if (ACTION_FOCUS) {
+            if (actionAfter) {
+                newBloc.insertAfter(ACTION_FOCUS);
+            } else {
+                newBloc.insertBefore(ACTION_FOCUS);
+            }
+            // CTRL = REPLACE
+            if (actionReplace) {
+                ACTION_FOCUS.remove();
+            }
+        } else {
+            if (actionAfter) {
+                newBloc.insertAfter(BLOC_FOCUS.find(".empty").first());
+            } else {
+                newBloc.insertBefore(BLOC_FOCUS.find(".empty").first());
+            }
+            // CTRL = REPLACE
+            if (actionReplace) {
+                BLOC_FOCUS.remove();
+            }
+        }
+        $('.element').removeClass("scenario-bloc-focused");
+        $('.expression').removeClass("scenario-action-focused");
+        BLOC_FOCUS = null;
+        ACTION_FOCUS = null;
+        updateSortable();
+        setUndoStack();
+    } else {
+        notify("Attention", "Aucun bloc ni action selectionné(e)s, ni copié(e)s !", 'warning');
+    }
 }
