@@ -603,6 +603,9 @@ scenario:
   timeout-unity: seconds
   trigger: trigger
   twice: Both
+  use: Using
+  used-by: Used by scenarios
+  used-in: Use scenarios
   variables: variables
   visible: Visible
   you-have-scenarios: You have %s scenario(s).

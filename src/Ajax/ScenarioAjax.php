@@ -364,7 +364,22 @@ class ScenarioAjax extends BaseAjax
         foreach ($scenario->getElement() as $element) {
             $return['elements'][] = $element->getAjaxElement();
         }
-
+        $return['scenarioLinkBy'] = array('scenario' => array());
+    		$scenarioUsedBy = $scenario->getUsedBy();
+    		foreach ($scenarioUsedBy['scenario'] as $scenarioLink) {
+      			if($scenarioLink->getId() == $scenario->getId()){
+      				  continue;
+      			}
+    			  $return['scenarioLinkBy']['scenario'][$scenarioLink->getId()] = array('id' => $scenarioLink->getId(),'name' => $scenarioLink->getHumanName(),'isActive' => $scenarioLink->getIsActive(),'isVisible' => $scenarioLink->getIsVisible());
+    		}
+        $return['scenarioLinkIn'] = array('scenario' => array());
+    		$scenarioUse = $scenario->getUse();
+    		foreach ($scenarioUse['scenario'] as $scenarioLink) {
+      			if($scenarioLink->getId() == $scenario->getId()){
+      				  continue;
+      			}
+      			$return['scenarioLinkIn']['scenario'][$scenarioLink->getId()] = array('id' => $scenarioLink->getId(),'name' => $scenarioLink->getHumanName(),'isActive' => $scenarioLink->getIsActive(),'isVisible' => $scenarioLink->getIsVisible());
+    		}
         $this->ajax->success($return);
     }
 

@@ -603,6 +603,9 @@ scenario:
   timeout-unity: secondes
   trigger: Déclencheur
   twice: Les deux
+  use: Utilisation
+  used-by: Utilisé par les scénarios
+  used-in: Utilise les scénarios
   variables: Variables
   visible: Visible
   you-have-scenarios: Vous avez %s scénario(s).

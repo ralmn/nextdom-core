@@ -443,6 +443,11 @@ function initGeneralFormEvents() {
             el.closest('.trigger').find('.scenarioAttr[data-l1key=trigger]').value(result.human);
         });
     });
+
+    // Launching trigger remove button
+    pageContainer.off('click', '.openUsedBy').on('click', '.openUsedBy', function (event) {
+        loadScenario($(this).attr('data-scenario_id'), GENERAL_TAB);
+    });
 }
 
 /**
@@ -1081,6 +1086,7 @@ function printScenario(scenarioId) {
             if (data.name) {
                 document.title = data.name + ' - NextDom';
             }
+            $('#scenarioName').html(data.name);
             $('.scenarioAttr[data-l1key=object_id] option:first').attr('selected', true);
             $('.scenarioAttr[data-l1key=object_id]').val('');
             pageContainer.setValues(data, '.scenarioAttr');
@@ -1126,6 +1132,14 @@ function printScenario(scenarioId) {
             }
             if(!isset(data.timeout)){
                 $('.scenarioAttr[data-l1key=timeout]').value(0);
+            }
+            $('.usedBy').empty();
+            for (var i in data.scenarioLinkBy.scenario) {
+                addUsedBy(data.scenarioLinkBy.scenario[i],'.usedBy');
+            }
+            $('.usedIn').empty();
+            for (var i in data.scenarioLinkIn.scenario) {
+                addUsedBy(data.scenarioLinkIn.scenario[i],'.usedIn');
             }
             if (data.elements.length === 0) {
                 scenarioContainer.append('<div class="span_noScenarioElement"><p class="alert alert-info">{{Pour programmer votre scénario, veuillez commencer par ajouter des blocs...}}</p></div>')
@@ -1175,7 +1189,7 @@ function updateScenarioDisplay(_id, _data) {
     scenarioState.removeClass('label-danger label-info label-success label-warning label-default')
     if (isset(_data.isActive) && _data.isActive != 1) {
         scenarioState.text('{{Inactif}}');
-        scenarioState.addClass('label-default');
+        scenarioState.addClass('label-action');
     } else {
         switch (_data.state) {
             case 'error' :
@@ -1270,6 +1284,31 @@ function addSchedule(scheduleCode) {
     scheduleHtml += '</div>';
     scheduleHtml += '</div>';
     $('.scheduleMode').append(scheduleHtml);
+}
+
+/**
+ * Add schedule start element
+ *
+ * @param scenario
+ */
+function addUsedBy(scenario,section) {
+    var usedByHtml = '<div class="form-group col-xs-6 col-xs-12 col-padding">';
+    usedByHtml += '<div class="mix-group">';
+    usedByHtml += '<span class="label label-default label-sticker">' + scenario.name + '</span>';
+    if (scenario.isActive == true) {
+        usedByHtml += '<span class="label label-success label-sticker-big badge">{{Actif}}</span>';
+    } else {
+        usedByHtml += '<span class="label label-danger label-sticker-big badge">{{Inactif}}</span>';
+    }
+    if (scenario.isVisible == true) {
+        usedByHtml += '<span class="label label-success label-sticker-big badge">{{Visible}}</span>';
+    } else {
+        usedByHtml += '<span class="label label-danger label-sticker-big badge">{{Non Visible}}</span>';
+    }
+    usedByHtml += '<a class="btn btn-primary openUsedBy" data-scenario_id="' + scenario.id + '"><i class="fas fa-link"></i>{{Ouvrir}}</a>';
+    usedByHtml += '</div>';
+    usedByHtml += '</div>';
+    $(section).append(usedByHtml);
 }
 
 /**

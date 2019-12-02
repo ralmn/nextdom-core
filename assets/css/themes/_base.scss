@@ -73,7 +73,8 @@
 }
 
 /* Bouton primaires */
-.btn-primary {
+.btn-primary,
+.label-primary {
   background-color: map_get($color_theme, 'color1') !important;
   border-color: map_get($color_theme, 'color1') !important;
 }

@@ -139,7 +139,7 @@ class NextDomHelper
                 && strpos($version, 'stretch') === false
                 && strpos($version, 'buster') === false) {
                 $state = false;
-            }   
+            }
         }
         $systemHealth[] = array(
             'icon' => 'fa-cogs',
@@ -1189,7 +1189,6 @@ class NextDomHelper
             }
             $results['dataStore'][$variable] = $dataStore;
         }
-
         return $results;
     }
 
