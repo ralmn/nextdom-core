@@ -157,7 +157,6 @@ function initEvents() {
                                         notify("Erreur", error.message, 'error');
                                     },
                                     success: function (data) {
-                                        $('#div_Profils').setValues(data, '.configKey');
                                         modifyWithoutSave = false;
                                         $(".bt_cancelModifs").hide();
                                         updateInformations();
