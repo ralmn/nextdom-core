@@ -1551,7 +1551,7 @@ class Scenario implements EntityInterface
     public function getUse()
     {
         $json = NextDomHelper::fromHumanReadable(json_encode($this->export('array')));
-        return NextDomHelper::getTypeUseOld($json);
+        return NextDomHelper::getTypeUse($json);
     }
 
     /**
